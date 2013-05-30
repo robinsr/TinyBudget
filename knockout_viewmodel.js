@@ -24,30 +24,50 @@ function AppViewModel() {
         }
         //console.log(util.inspect(todays_date))
     }
-    
     self.date = setDate();
     
-    // load status:
-    // 0: logged out
-    // 1: logged in, no data
-    // 2: logged in, with data
-    // 3: loading additional data
+    self.loadedMonths = ko.observableArray([]);  // loadstatus: 0: logged out, 1: logged in no data, 2: logged in with data, 3: loading additional data
     self.loadstatus = ko.observable(0);
-
-    self.currentyear = ko.observable();
-    self.currentmonth = ko.observable();
-    
-    self.loadedMonths = ko.observableArray([]);
+    self.currentyear = ko.observable(self.date.year);
+    self.currentmonth = ko.observable(self.date.month);
+    self.signuperror = ko.observable(0);
+    self.inputFeedback = ko.observable('');
+    self.expenseOrPaydayActive = ko.observable("expense");
+	self.userItems = ko.observableArray([]);
+    self.desc = ko.observable("");
+    self.amt = ko.observable("");
+    self.input_date = ko.observable("");
+    self.cat = ko.observable(""); 
+    self.input_error = ko.observable("");
+	self.sorting = false;
+	self.allCategoriesTotal = ko.observable();
+	self.paydayTotal = ko.observable();
+	self.showUnspent = ko.observable(false);
+	self.unusedCategories = ko.observableArray([]);
+	self.categoryHighlight = ko.observable();
+	self.userCategories = ko.observableArray([]);
+	self.userCategoriesTotals = ko.observableArray([]);
+    self.categoryFeedback = ko.observable();
+    self.categoryValidateState = ko.observable();
+    self.addCatValue = ko.observable("");
+	self.username = ko.observable();
+    self.userEmail = ko.observable();
+    self.changePassError = ko.observableArray([]);
+    self.oldPass = ko.observable("");
+    self.newPass = ko.observable("");
+	self.changeEmailError = ko.observableArray([]);
+	self.loadBarProgress = ko.observable(0);
+	self.uname = ko.observable('');
+    self.upass = ko.observable('');
+	self.signup_uname = ko.observable("");
+    self.signup_pass = ko.observable("");
+    self.signup_email = ko.observable("");
+	self.modalStatus = ko.observable("");
+	self.onTour = ko.observable(0);// 0 not onTour; 1 User Tour; 2 Tech Tour    
     
     self.loadedMonths.subscribe(function(array){
         //console.log('added to loaded months '+array[array.length-1]);
     });
-     
-    
-
-    
-    self.currentyear(self.date.year);
-    self.currentmonth(self.date.month);
     
     self.fetchMonth = function(month,year){
         issue('getMonth', [
@@ -130,11 +150,6 @@ function AppViewModel() {
     });
     self.user = {};
 
-    self.signuperror = ko.observable(0);
-
-    self.inputFeedback = ko.observable('');
-    
-    self.expenseOrPaydayActive = ko.observable("expense");
 
     self.switchExpensePayday = function(){
         if (self.expenseOrPaydayActive() == "expense"){
@@ -144,18 +159,6 @@ function AppViewModel() {
         }
     }
 
-    // This section handles the user's spending items. The items are stored in an observable array and some
-    // function subscribe to changes in that array in order to update the server. 
-    self.userItems = ko.observableArray([]);
-
-    self.desc = ko.observable("");
-    self.amt = ko.observable("");
-    self.input_date = ko.observable("");
-    self.cat = ko.observable("");
-
-
-    
-    self.input_error = ko.observable("");
 
         // adds an item to userItems adter the input form is submitted. obviously needs validation
     self.addItem = function () {
@@ -287,8 +290,6 @@ function AppViewModel() {
     self.removeItem = function (item) {
         self.userItems.remove(item)
     };
-
-    self.sorting = false;
 
         // add callback triggered after userItems array is changhed to update server
     self.addItemToServer = function (item) {
@@ -491,13 +492,6 @@ function AppViewModel() {
         })(function () { self.sorting = false });
     }
 
-
-        // observable that holds the total of all the categoreis combines for the month in view
-    self.allCategoriesTotal = ko.observable();
-
-        // observable to hold total of paydays for a month
-    self.paydayTotal = ko.observable();
-
         // computed to find the difference of the above
     self.difference = ko.computed(function(){
         return Math.round((self.paydayTotal()-self.allCategoriesTotal()) * 100) / 100;
@@ -518,8 +512,6 @@ function AppViewModel() {
         }
         
     }
-
-    self.showUnspent = ko.observable(false);
 
     self.checkUnspent = function(next){
         //console.log(self.difference())
@@ -626,10 +618,6 @@ function AppViewModel() {
         }
     })
 
-        // observable array that holds categories for which there are items in the current month.
-        // The items remain but the category has been deleted
-    self.unusedCategories = ko.observableArray([]);
-
         // filter function to find unused categories    
     self.filteredUserItems.subscribe(function (array) {
         self.unusedCategories.removeAll();
@@ -650,8 +638,6 @@ function AppViewModel() {
         };
     });
 
-        // holds the name of the category that is being "highlighted"
-    self.categoryHighlight = ko.observable();
 
         // holds the array of items that match the name of the category in categoryHighlight
     self.categoryHighlightFilter = ko.computed(function(){
@@ -672,29 +658,11 @@ function AppViewModel() {
             }
         }
     }
-
-
-
-
-
-
-        // This section handes the user's categories. They are also stored in an observable array with functions to
-        // add, remove, and update the server.
-    self.userCategories = ko.observableArray([]);
     
         // this exists so the view can prompt the user to add categories
     self.userCategoriesLength = ko.computed(function () {
         return self.userCategories().length;
     })
-
-        // holds the total amount for each category for the month in view
-    self.userCategoriesTotals = ko.observableArray([]);
-
-        // validation feedback when adding categories
-    self.categoryFeedback = ko.observable();
-    self.categoryValidateState = ko.observable();
-
-    self.addCatValue = ko.observable("");
 
         // adds a category to the model
     self.addCategory = function (data) {
@@ -763,11 +731,6 @@ function AppViewModel() {
         self.modalStatus("account");
     }
 
-    self.username = ko.observable();
-    self.userEmail = ko.observable();
-
-    self.changePassError = ko.observableArray([]);
-
     self.changePass = function(){
         issue('changePass',[
             ['name',self.user.name],
@@ -790,8 +753,6 @@ function AppViewModel() {
         });
     }
 
-    self.changeEmailError = ko.observableArray([]);
-
     self.changeEmail = function(){
         issue('changeEmail',[
             ['name',self.user.name],
@@ -813,8 +774,6 @@ function AppViewModel() {
         });
     }
     
-        // loadstatus 1 load bar info
-    self.loadBarProgress = ko.observable(0);
     self.loadBarWidth =  ko.computed (function()    {
         //console.log('running '+self.loadBarProgress());
         return "width: " + self.loadBarProgress()  + "%";
@@ -896,9 +855,6 @@ function AppViewModel() {
         });
     }
     
-    self.uname = ko.observable('');
-    self.upass = ko.observable('');
-    
     // login function, loads user items and categories from server and pushes to obversvable arrays    
     self.login = function (newuser_name, newuser_pass) {
         newuser_name ? self.user.name = newuser_name : self.user.name = self.uname();
@@ -949,11 +905,6 @@ function AppViewModel() {
         }, 3000);
     }
     
-    
-    self.signup_uname = ko.observable("");
-    self.signup_pass = ko.observable("");
-    self.signup_email = ko.observable("");
-    
         // adds user to server, triggers login, displays error messages
     self.newUser = function () {
 
@@ -983,10 +934,6 @@ function AppViewModel() {
             }
         });
     }
-
-
-    
-
     
         // helper functions
     var currency_tooltip = $("#validate_amount").mouseover(function () {
@@ -1053,8 +1000,6 @@ function AppViewModel() {
     }
     
 
-
-    self.modalStatus = ko.observable("");
     self.modalClose = function () {
         self.modalStatus("");
     }
@@ -1063,12 +1008,6 @@ function AppViewModel() {
     }
 
     // ===========   Application Tours   ===========  
-
-
-        // 0 not onTour
-        // 1 User Tour
-        // 2 Tech Tour
-    self.onTour = ko.observable(0);
 
     self.endTour = function(){
         self.onTour(0)
