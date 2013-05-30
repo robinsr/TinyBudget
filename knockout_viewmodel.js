@@ -1,3 +1,4 @@
+// dev branch
 //console.log(is_ie8_or_newer);
 // =============  Custom jQuery shake animation =================
 
