@@ -2,57 +2,6 @@
 
     // the main viewmodel for this app
 function AppViewModel() {
-            // HighCharts object for pie chart
-    var pie_chart = {
-        chart: {
-            plotBackgroundColor: null,
-            plotBorderWidth: null,
-            plotShadow: false
-        },
-        title: {
-            text: ''
-
-        },
-        tooltip: {
-            enabled: false
-            //pointFormat: '<b>{point.percentage}%</b>',
-            //percentageDecimals: 1
-        },
-        plotOptions: {
-            pie: {
-                animation: true,
-                allowPointSelect: true,
-                cursor: 'pointer',
-                dataLabels: {
-                    enabled: true,
-                    color: '#000000',
-                    connectorColor: '#000000',
-                    formatter: function () {
-                        return '<b>' + this.point.name + '</b>: $' + this.point.y;
-                    }
-
-                },
-            }
-        },
-        series: [{
-                type: 'pie',
-                data: [],
-                point: {
-                    events: {
-                        click: function(event){
-                            if (self.onTour() === 0){
-                                self.highlightCategory(this.id);
-                            } else {
-                                //console.log("we're still on tour!")
-                            }
-                        }
-                    }
-                }
-            }
-        ]
-    }
-
-    //console.log(pie_chart)
     var self = this;
     
     // load status:
