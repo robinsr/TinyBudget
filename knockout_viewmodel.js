@@ -569,33 +569,10 @@ function AppViewModel() {
     
         // subscribes to changes in the categories model. uses same logic as when an item is added
         // or removed from one of the arrays. provides callbacks to update the server.
-    self.userCategories.subscribeArrayChanged(addCategoryToServer, removeCategoryFromServer);
-
-        // add category callback to update server
-    function addCategoryToServer(item) {
-        if (self.loadstatus() > 1) {
-            issue('addCategory', [
-                ['name', self.user.name],
-                ['sess', self.user.sess],
-                ['cat', item]
-            ], null, function (err, stat, text) {
-                //console.log(err, stat, text)
-            });
-        }
-    }
-
-        // remove category callback to update server
-    function removeCategoryFromServer(item) {
-        if (self.loadstatus() > 1) {
-            issue('deleteCategory', [
-                ['name', self.user.name],
-                ['sess', self.user.sess],
-                ['cat', item]
-            ], null, function (err, stat, text) {
-                //console.log(err, stat, text)
-            });
-        }
-    }
+    self.userCategories.subscribeArrayChanged(
+        function(item){server.addCategoryToServer(item)},
+        function(item){server.removeCategoryFromServer(item)}
+    );
     
         // after click, shows a modal window with a list of categories
     self.editCategories = function () {
