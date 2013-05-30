@@ -296,21 +296,8 @@ function AppViewModel() {
                     match.comment(data.value);
                     
                         // ...and the server
-                    issue('addItem', [
-                        ['name', self.user.name],
-                        ['sess', self.user.sess],
-                        ['cat', match.cat],
-                        ['day', match.day()],
-                        ['month', match.month()],
-                        ['year', match.year()],
-                        ['amt', match.amt],
-                        ['desc', match.desc],
-                        ['itemid', match.itemid],
-                        ['isflagged', match.isflagged()],
-                        ['comment', match.comment()]
-                    ], null, function (err, stat, text) {
-                        //console.log(err, stat, text)
-                    });
+                    item.loadedFromServer = false;
+                    server.addItemToServer(item);
                     
                         // destroy the previously initiallized popover 
                     $(event.target).popover('destroy');   
