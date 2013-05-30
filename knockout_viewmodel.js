@@ -1,25 +1,3 @@
-// dev branch
-//console.log(is_ie8_or_newer);
-// =============  Custom jQuery shake animation =================
-
-$(function(){
-    $.fn.shake = function(){
-        this.animate({
-            marginLeft: '-6px'
-        }, 30, function (el) {
-            $(this).animate({
-                marginLeft: '6px'
-            }, 30, function (el) {
-                $(this).animate({
-                    marginLeft: '0'
-                }, 30)
-            });
-        });
-    }
-});
-
-
-
 // ===============  KNOCKOUT CUSTOM FUNCTIONS ==============
 
 
