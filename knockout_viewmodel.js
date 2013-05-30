@@ -22,7 +22,6 @@ function AppViewModel() {
             two_month_back: f.getMonth()+1,
             two_month_back_yr: f.getFullYear()
         }
-        //console.log(util.inspect(todays_date))
     }
     self.date = setDate();
     
@@ -66,7 +65,7 @@ function AppViewModel() {
     self.onTour = ko.observable(0);// 0 not onTour; 1 User Tour; 2 Tech Tour    
     
     self.loadedMonths.subscribe(function(array){
-        //console.log('added to loaded months '+array[array.length-1]);
+        console.log('added to loaded months '+array[array.length-1]);
     });
     
     self.incrementMonth = function(){
@@ -82,7 +81,7 @@ function AppViewModel() {
             return (monthCheck == piece)
         });
         if (!match) {
-            //console.log('need data for: '+monthCheck)
+            console.log('need data for: '+monthCheck)
             server.fetchMonth(self.currentmonth(),self.currentyear())
         }
     }
@@ -100,7 +99,7 @@ function AppViewModel() {
             return (monthCheck == piece)
         });
         if (!match) {
-            //console.log('need data for: '+monthCheck)
+            console.log('need data for: '+monthCheck)
             server.fetchMonth(self.currentmonth(),self.currentyear())
         }
     }
@@ -144,20 +143,20 @@ function AppViewModel() {
                         // remove all non digits
                         var re = /^-?\$?[0-9]*\.?([0-9]{2})?$/
                         var match = re.test(self.amt())
-                        //console.log('tested and ' + match)
+                        console.log('tested and ' + match)
                         if (match) {
                                 // the input should parse to a decimal, otherwise dont add it
                             var parsed_input = parseFloat(self.amt()).toFixed(2);
                             if (!isNaN(parsed_input)) {
                                 self.input_error("");
                                 // a correct date is MM/DD/YYYY. split at '/' to get 3 member array
-                                //console.log(self.input_date());
+                                console.log(self.input_date());
                                 var date = self.input_date().split("/");
                                 // check to see if there are 3 members
                                 if ((date[0] && date[1] && date[2])) {
                                     for (var i = 0; i < date.length; i++) {
                                         date[i] = parseInt(date[i]);
-                                        //console.log('parsing ' + date[i])
+                                        console.log('parsing ' + date[i])
                                     };
                                         // check is day, month, and year are acceptable
                                     if ((0 < date[0]) && (date[0] < 13) && (!isNaN(date[0]))) {
@@ -210,7 +209,7 @@ function AppViewModel() {
     
         // displays error messages
     self.validateFail = function(type){
-        //console.log('validate fail' ,type);
+        console.log('validate fail' ,type);
         switch (type){
             case 'desc':
             case 'desc_long':
@@ -378,30 +377,30 @@ function AppViewModel() {
 
     self.renderChart = function(){
         if (is_ie8_or_newer === false){
-            $('#highchart').highcharts(pie_chart);
+            $('#highchart').highcharts(chart_objects.pie_chart);
         }
         else {
             pie_chart.plotOptions.pie.animation = false;
             $('#highchart').highcharts(pie_chart);
-            //console.log("animation "+pie_chart.plotOptions.pie.animation)
+            console.log("animation "+chart_objects.pie_chart.plotOptions.pie.animation)
         }
         
     }
 
     self.checkUnspent = function(next){
-        //console.log(self.difference())
+        console.log(self.difference())
         if (self.showUnspent()===true){
             if (self.difference() > 0){
                 var dif = parseFloat(self.difference());
-                pie_chart.series[0].data.push({name:'Unspent', y:dif,id:'unspentSlice'})
+                chart_objects.pie_chart.series[0].data.push({name:'Unspent', y:dif,id:'unspentSlice'})
                 next(true);
             } else {
                 next(false);
             }
         } else {
-            for (var i = 0; i < pie_chart.series[0].data.length; i++) {
-                if (pie_chart.series[0].data[i].name == 'Unspent'){
-                    pie_chart.series[0].data.splice(i,1);
+            for (var i = 0; i < chart_objects.pie_chart.series[0].data.length; i++) {
+                if (chart_objects.pie_chart.series[0].data[i].name == 'Unspent'){
+                    chart_objects.pie_chart.series[0].data.splice(i,1);
                     next(true);
                     return
                 }
@@ -464,7 +463,7 @@ function AppViewModel() {
         self.userCategoriesTotals.removeAll();
         
             // set up a highcharts object for making the pie chart
-        pie_chart.series[0].data = [];
+        chart_objects.pie_chart.series[0].data = [];
         
             // for each category in temp_totals...
         for (var l in temp_totals) {
@@ -475,7 +474,7 @@ function AppViewModel() {
             
                 // ...and to the high chart. keep the pie clean by excluding zero categories
             if (amt !== 0 || name.toLowerCase() == 'payday'){
-                pie_chart.series[0].data.push({name:l, y:amt, id:l})
+                chart_objects.pie_chart.series[0].data.push({name:l, y:amt, id:l})
             }
         }
         
@@ -487,7 +486,7 @@ function AppViewModel() {
         // display the new pie chart
         if (self.sorting !== true && self.loadstatus() > 1) {
             self.checkUnspent(function(val){
-                //console.log('rending chart')
+                console.log('rending chart')
                 self.renderChart();
             })
         }
@@ -584,7 +583,7 @@ function AppViewModel() {
     }
 
     self.changePass = function(){
-        issue('changePass',[
+        tinybudgetutils.issue('changePass',[
             ['name',self.user.name],
             ['sess', self.user.sess],
             ['oldPass',self.oldPass()],
@@ -606,7 +605,7 @@ function AppViewModel() {
     }
 
     self.changeEmail = function(){
-        issue('changeEmail',[
+        tinybudgetutils.issue('changeEmail',[
             ['name',self.user.name],
             ['sess', self.user.sess],
             ['email',self.userEmail()]
@@ -627,7 +626,7 @@ function AppViewModel() {
     }
     
     self.loadBarWidth =  ko.computed (function()    {
-        //console.log('running '+self.loadBarProgress());
+        console.log('running '+self.loadBarProgress());
         return "width: " + self.loadBarProgress()  + "%";
     });
 
@@ -636,15 +635,15 @@ function AppViewModel() {
     self.login = function (newuser_name, newuser_pass) {
         newuser_name ? self.user.name = newuser_name : self.user.name = self.uname();
         newuser_pass ? self.user.pass = newuser_pass : self.user.pass = self.upass();
-        issue('login', [
+        tinybudgetutils.issue('login', [
             ['name', self.user.name],
             ['pass', self.user.pass]
         ], null, function (err, stat, data) {
             if (err) {
-                //console.log('error logining in')
+                console.log('error logining in')
             } else {
                 if (stat == 400) {
-                    //console.log('animating')
+                    console.log('animating')
                     $("#signin_form").shake();
                 } else if (stat == 200) {
                     data = JSON.parse(data)
@@ -663,11 +662,11 @@ function AppViewModel() {
         // destroys session and clears form fields and models 
     self.logout = function () {
         self.loadstatus(0);
-        issue('logout', [
+        tinybudgetutils.issue('logout', [
             ['name', self.user.name]
         ], null, function (err, stat, message) {
             if (err || stat != 200) {
-                //console.log(err, stat, message)
+                console.log(err, stat, message)
             }
         });
         self.userItems.removeAll();
@@ -689,7 +688,7 @@ function AppViewModel() {
             self.signuperror('You left something blank');
             return;
         }
-        issue('newUser', [
+        tinybudgetutils.issue('newUser', [
             ['name', self.signup_uname()],
             ['pass', self.signup_pass()],
             ['email',self.signup_email()]
@@ -730,7 +729,7 @@ function AppViewModel() {
 
         self.loadstatus.subscribe(function(val){
             if (val == 2 && self.onTour() == 1){
-                //console.log(val,' loaded and ready for tour!');
+                console.log(val,' loaded and ready for tour!');
                 
                 self.modalStatus("tour");
             }
@@ -751,7 +750,7 @@ function AppViewModel() {
 
         self.loadstatus.subscribe(function(val){
             if (val == 2 && self.onTour() == 2){
-                //console.log(val,' loaded and ready for tour!');
+                console.log(val,' loaded and ready for tour!');
                 
                 self.modalStatus("tech");
             }
