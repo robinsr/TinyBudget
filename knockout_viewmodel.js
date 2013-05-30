@@ -770,7 +770,3 @@ function AppViewModel() {
 
 }
 var tinybudget = { viewmodel: new AppViewModel()};
-
-ko.applyBindings(tinybudget.viewmodel);
-document.forms.signin_form.uname.focus();
-//console.log(tinybudget);
