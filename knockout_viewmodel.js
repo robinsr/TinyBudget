@@ -69,34 +69,6 @@ function AppViewModel() {
         //console.log('added to loaded months '+array[array.length-1]);
     });
     
-    self.fetchMonth = function(month,year){
-        issue('getMonth', [
-            ['name',self.user.name],
-            ['sess',self.user.sess],
-            ['year',year],
-            ['month',month]
-            ], null, function(err,stat,message){
-                
-            if (err) {
-                //console.log('error getMonth')
-            } else {
-                var datai = JSON.parse(message);
-                //console.log(datai)
-                
-                if (datai.items && datai.items.length > 0) {
-                    for (var i = 0; i < datai.items.length; i++) {
-                        var flg = (datai.items[i].isflagged == 'true');
-                        self.userItems.push(new rowitem(true, datai.items[i].desc, datai.items[i].amt, datai.items[i].year + "/" + datai.items[i].month + "/" + datai.items[i].day, datai.items[i].cat, datai.items[i].itemid, flg, datai.items[i].comment));
-                    }
-                } else {
-                    // no items in this month
-                }
-                    
-                self.loadedMonths.push(month+","+year);
-            }
-        });
-    }
-    
     self.incrementMonth = function(){
         self.categoryHighlight(null);
         if (self.currentmonth() == 12){
@@ -111,7 +83,7 @@ function AppViewModel() {
         });
         if (!match) {
             //console.log('need data for: '+monthCheck)
-            self.fetchMonth(self.currentmonth(),self.currentyear())
+            server.fetchMonth(self.currentmonth(),self.currentyear())
         }
     }
     
@@ -129,7 +101,7 @@ function AppViewModel() {
         });
         if (!match) {
             //console.log('need data for: '+monthCheck)
-            self.fetchMonth(self.currentmonth(),self.currentyear())
+            server.fetchMonth(self.currentmonth(),self.currentyear())
         }
     }
     
