@@ -113,7 +113,6 @@ function AppViewModel() {
         self.currentyear(self.currentyear() - 1)
     }
     
-
     self.friendlyyear = ko.computed(function () {
         return self.currentyear().toString();
     });
@@ -121,7 +120,6 @@ function AppViewModel() {
         return monthName[self.currentmonth().toString()];
     });
     self.user = {};
-
 
     self.switchExpensePayday = function(){
         if (self.expenseOrPaydayActive() == "expense"){
@@ -138,38 +136,25 @@ function AppViewModel() {
             // validate here please 
             // there should be a description
         if (self.desc().length > 0){
-            
-            
-            
             self.input_error("");
-
                 // 32 character limit
             if (self.desc().length <= 32) {
-
                 if (self.amt().length > 0) {
-
                     if (self.amt().length <= 8) {
-
                         // remove all non digits
                         var re = /^-?\$?[0-9]*\.?([0-9]{2})?$/
-
                         var match = re.test(self.amt())
                         //console.log('tested and ' + match)
-
                         if (match) {
-
                                 // the input should parse to a decimal, otherwise dont add it
                             var parsed_input = parseFloat(self.amt()).toFixed(2);
                             if (!isNaN(parsed_input)) {
                                 self.input_error("");
-
                                 // a correct date is MM/DD/YYYY. split at '/' to get 3 member array
                                 //console.log(self.input_date());
                                 var date = self.input_date().split("/");
-
                                 // check to see if there are 3 members
                                 if ((date[0] && date[1] && date[2])) {
-
                                     for (var i = 0; i < date.length; i++) {
                                         date[i] = parseInt(date[i]);
                                         //console.log('parsing ' + date[i])
@@ -178,21 +163,12 @@ function AppViewModel() {
                                     if ((0 < date[0]) && (date[0] < 13) && (!isNaN(date[0]))) {
                                         if ((0 < date[1]) && (date[1] < 32) && (!isNaN(date[1]))) {
                                             if ((2011 < date[2]) && (date[2] < 2015) && (!isNaN(date[2]))) {
-                                                
-                                                
-                                                
-                                                
-                                                
                                                 self.input_error("");
-                                                
                                                 var cat = self.expenseOrPaydayActive() == 'payday' ? 'payday' : self.cat();
                                                 self.userItems.push(new rowitem(false, self.desc(), parsed_input, self.input_date(), cat));
-                                                
                                                 self.desc("");
                                                 self.amt("");
                                                 self.input_date("");
-
-    
                                                 document.forms.input_form.desc.focus();
                                                 self.inputFeedback('Item Added Successfully')
                                                 setTimeout(function () {
