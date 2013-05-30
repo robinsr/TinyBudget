@@ -39,11 +39,8 @@ Thumbs.db
 
 
 message.log
+
 /scrapeScripts
-/resources
-/node_modules
 /img
 /hold
 /googledocs
-/fonts
-/bootstrap
