@@ -238,59 +238,13 @@ function AppViewModel() {
     self.removeItem = function (item) {
         self.userItems.remove(item)
     };
-
-        // add callback triggered after userItems array is changhed to update server
-    self.addItemToServer = function (item) {
-        //console.log('adding item to server', self.sorting, self.loadstatus(), item);
-        if (self.sorting === false) {
-            if (self.loadstatus() > 1) {
-                if (item.loadedFromServer === false) {
-                    issue('addItem', [
-                        ['name', self.user.name],
-                        ['sess', self.user.sess],
-                        ['cat', item.cat],
-                        ['day', item.day()],
-                        ['month', item.month()],
-                        ['year', item.year()],
-                        ['amt', item.amt],
-                        ['desc', item.desc],
-                        ['itemid', item.itemid],
-                        ['isflagged', item.isflagged()],
-                        ['comment', item.comment()]
-                    ], null, function (err, stat, text) {
-                        //console.log(err, stat, text)
-                    });
-                }
-            }
-        } else {
-            //console.log('self.sorting is ' + self.sorting);
-        }
-    }
-
-        // remove callback triggered after userItems array is changed to update server
-    self.removeItemFromServer = function (item) {
-        //console.log('removing item to server', self.sorting, self.loadstatus());
-        if (self.sorting === false) {
-            if (self.loadstatus() > 1) {
-                issue('deleteItem', [
-                    ['name', self.user.name],
-                    ['sess', self.user.sess],
-                    ['day', item.day()],
-                    ['month', item.month()],
-                    ['year', item.year()],
-                    ['itemid', item.itemid]
-                ], null, function (err, stat, text) {
-                    //console.log(err, stat, text)
-                });
-            }
-        } else {
-            //console.log('self.sorting is ' + self.sorting);
-        }
-    }
     
         // subscries to changes in userItems array. Uses a custom function to detect whether an item
         // was added or removed from the array and then provices an add and remove callback
-    self.userItems.subscribeArrayChanged(self.addItemToServer, self.removeItemFromServer);
+    self.userItems.subscribeArrayChanged(
+        function(item){server.addItemToServer(item)}, 
+        function(item){server.removeItemFromServer(item)}
+    );
     
         // changes the table row CSS class based on a boolean value associated with the item
     self.flagItem = function(item){
