@@ -2,25 +2,7 @@
 
     // the main viewmodel for this app
 function AppViewModel() {
-    var self = this;
-    
-    // load status:
-    // 0: logged out
-    // 1: logged in, no data
-    // 2: logged in, with data
-    // 3: loading additional data
-    self.loadstatus = ko.observable(0);
-
-    self.currentyear = ko.observable();
-    self.currentmonth = ko.observable();
-    
-    self.loadedMonths = ko.observableArray([]);
-    
-    self.loadedMonths.subscribe(function(array){
-        //console.log('added to loaded months '+array[array.length-1]);
-    });
-     
-    
+    var self = this; 
     var setDate = function(){
         var d = new Date();
         var e = new Date();
@@ -44,6 +26,25 @@ function AppViewModel() {
     }
     
     self.date = setDate();
+    
+    // load status:
+    // 0: logged out
+    // 1: logged in, no data
+    // 2: logged in, with data
+    // 3: loading additional data
+    self.loadstatus = ko.observable(0);
+
+    self.currentyear = ko.observable();
+    self.currentmonth = ko.observable();
+    
+    self.loadedMonths = ko.observableArray([]);
+    
+    self.loadedMonths.subscribe(function(array){
+        //console.log('added to loaded months '+array[array.length-1]);
+    });
+     
+    
+
     
     self.currentyear(self.date.year);
     self.currentmonth(self.date.month);
