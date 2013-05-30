@@ -631,81 +631,6 @@ function AppViewModel() {
         return "width: " + self.loadBarProgress()  + "%";
     });
 
-        // after logging in, this gets the last 3 month of data from the server, adds the categories and items
-        // to their respective arrays. triggers the load status to '2' so the rest of the view will appear and enables 
-        // form fiends so the user can input items
-    self.getInit = function () {
-        self.modalStatus("");
-        issue('getInit', [
-            ['name', self.user.name],
-            ['sess', self.user.sess]
-        ], null, function (err, stat, datai) {
-            if (err) {
-                //console.log('error get Init')
-            } else {
-                datai = JSON.parse(datai);
-                //console.log(datai)
-                self.user.categories = JSON.parse(JSON.stringify(datai.categories));
-                //var input_form_items = document.querySelectorAll('.input_form_item');
-                if (self.user.categories.length == 0) {
-                    self.modalStatus("tour");
-                } else {
-                    for (var i = 0; i < self.user.categories.length; i++) {
-                        self.userCategories.push(self.user.categories[i]);
-                    };
-                }
-                //console.log(datai.items);
-                if (datai.items.length > 2) {
-                        // The following is not in a for loop because the UI will not update 
-                        // the progress bar until the for loop completes
-                    var count = 0
-                    function run(){
-                        //console.log(count,datai.items.length - 2);
-                        var progress = Math.floor((count/datai.items.length)*100);
-                        if (progress % 10 == 0){
-                            self.loadBarProgress(progress);
-                        }
-                        self.userItems.push(new rowitem(true, datai.items[count].desc, datai.items[count].amt, datai.items[count].year + "/" + datai.items[count].month + "/" + datai.items[count].day, datai.items[count].cat, datai.items[count].itemid, (datai.items[count].isflagged=="true"), datai.items[count].comment));
-                        
-                                // length minus 2 is important! it allows the regular subscribed function to render the high chart
-                                // on the last item. if it was minus 1 then the subscribed funtion wouldn't run since all items are loaded.
-                                // One more item remains to be loaded therefore we dont return the block right here.
-                        if (count == datai.items.length - 2) {
-                            //console.log('loadstatus2 at run');
-                            self.loadstatus(2);
-                        }
-                        
-                        count++;
-                        
-                        if (count >= datai.items.length){
-                            //console.log('run returning',count);
-                            return;
-                        } else {
-                            setTimeout(run,0);
-                        }
-                    }; 
-                    run();
-                } else if (datai.items.length > 1){
-                    //console.log('loadstatus2 at not run');
-                    self.loadstatus(2);
-                    var flg = (datai.items[0].isflagged == 'true');
-                    self.userItems.push(new rowitem(true, datai.items[0].desc, datai.items[0].amt, datai.items[0].year + "/" + datai.items[0].month + "/" + datai.items[0].day, datai.items[0].cat, datai.items[0].itemid, flg, datai.items[0].comment));
-                } else {
-                    //console.log('load status 2 at 0 items');
-                    self.loadstatus(2);
-                }
-                var gitInitMonths = [
-                    self.date.month+","+self.date.year,
-                    self.date.one_month_back+","+self.date.one_month_back_yr,
-                    self.date.two_month_back+","+self.date.two_month_back_yr
-                    ]
-                    
-                for (i=0; i<gitInitMonths.length;i++){
-                    self.loadedMonths.push(gitInitMonths[i]);
-                }
-            }
-        });
-    }
     
     // login function, loads user items and categories from server and pushes to obversvable arrays    
     self.login = function (newuser_name, newuser_pass) {
@@ -729,7 +654,7 @@ function AppViewModel() {
                     self.user.sess = data.sessionid;
                     self.user.email = data.email
                     self.userEmail(self.user.email);
-                    self.getInit();
+                    getInit.main();
                     self.username(self.user.name);
                 }
             }
