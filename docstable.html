@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Dev - Tiny Budget</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<script type="text/javascript" src="jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="bootstrap.min.js"></script>
+<script type="text/javascript" src="jquery.watable.js"></script>
+<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/md5.js"></script>
+<script src="knockout.js" type="Text/javascript"></script>
+<script src="dateformat.js" type="Text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<link rel="stylesheet" type="text/css" href="watable.css">
+<style type="text/css">
+
+</style>
+</head>
+<body>
+<div id="wrap">
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container">
+
+          <a class="brand" href="#">Tiny Budget Docs</a>
+
+          
+      </div>
+    </div>
+  </div>
+    <div class="container" id="app_container">
+      <div class="span12">
+        <div class="hero-unit">
+                <h2>Tiny Budget</h2>
+                <p>Oooo... diagram...</p>
+                <img src="img/TinyBudget.png" style="width:100%"/>
+        </div>
+          <div class="hero-unit" style="font-size:12px!important;">
+            <h2>Server API Calls</h2>
+          <table class="table table-bordered table-striped docs_table">
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Requires</th>
+                <th>Optional</th>
+                <th>Returns</th>
+                <th>Example Call</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>newUser</b></td>
+                <td>name, pass(md5)</td>
+                <td>none</td>
+                <td>HTTP status only</td>
+                <td>newUser?name=cary&pass=3a987f1b8bf87f1e990e6272c0b51960</td>
+              </tr>
+              <tr>
+                <td><b>login</b></td>
+                <td>name, pass(md5)</td>
+                <td>none</td>
+                <td>32 character session variable</td>
+                <td>login?name=cary&pass=3a987f1b8bf87f1e990e6272c0b51960</td>
+              </tr>
+              <tr>
+                <td><b>logout</b></td>
+                <td>name</td>
+                <td>none</td>
+                <td>HTTP status only</td>
+                <td>login?name=cary</td>
+              </tr>
+              <tr>
+                <td><b>addItem</b></td>
+                <td>name, sess, year, day, month, amt, cat, desc</td>
+                <td>itemid (reccommended), isflagged, comment</td>
+                <td>HTTP status only</td>
+                <td>addItem?name=cary&sess=3a987f1b8bf87f1e990e6272c0b51960&cat=Camping%20Gear&day=17&month=4&year=2013&amt=45.00&desc=boots&itemid=471dca55861371c4348ce94f73c20da3&isflagged=false&comment</td>
+              </tr>
+              <tr>
+                <td><b>deleteItem</b></td>
+                <td>name, sess, year, day, month, itemid</td>
+                <td>none</td>
+                <td>HTTP status only</td>
+                <td>deleteItem?name=cary&sess=3a987f1b8bf87f1e990e6272c0b51960&day=17&month=4&year=2013&itemid=471dca55861371c4348ce94f73c20da3</td>
+              </tr>
+              <tr>
+                <td><b>addCategory</b></td>
+                <td>name, sess, cat</td>
+                <td>none</td>
+                <td>HTTP status only</td>
+                <td>deleteItem?name=cary&sess=3a987f1b8bf87f1e990e6272c0b51960&cat=Camping%20Gear</td>
+              </tr>
+              <tr>
+                <td><b>deleteCategory</b></td>
+                <td>name, sess, cat</td>
+                <td>none</td>
+                <td>HTTP status only</td>
+                <td>deleteCategory?name=cary&sess=3a987f1b8bf87f1e990e6272c0b51960&cat=Camping%20Gear</td>
+              </tr>
+              <tr>
+                <td><b>getInit</b></td>
+                <td>name, sess</td>
+                <td>none</td>
+                <td>JSON Object: { items:array, cat:array }</td>
+                <td>getInit?name=cary&sess=3a987f1b8bf87f1e990e6272c0b51960</td>
+              </tr>
+              <tr>
+                <td><b>getYear</b></td>
+                <td>name, sess, year</td>
+                <td>none</td>
+                <td>JSON Object: { items:array }</td>
+                <td>getYear?name=cary&sess=3a987f1b8bf87f1e990e6272c0b51960&year=2013</td>
+              </tr>
+              <tr>
+                <td><b>getMonth</b></td>
+                <td>name, sess, year, month</td>
+                <td>none</td>
+                <td>JSON Object: { items:array }</td>
+                <td>getMonth?name=cary&sess=3a987f1b8bf87f1e990e6272c0b51960&month=4&year=2013</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+</body>
+</html>

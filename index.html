@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=8">
+<script type="text/javascript">
+var is_ie8_or_newer = false;
+</script>
+<!--[if gte IE 8]>
+<script type="text/javascript">
+is_ie8_or_newer = true;
+</script>
+<![endif]-->
+<title>Tiny Budget</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<script type="text/javascript" src="jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="bootstrap.min.js"></script>
+<script type="text/javascript" src="jquery.watable.js"></script>
+<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/md5.js"></script>
+<script src="knockout_full.js" type="Text/javascript"></script>
+<script src="dateformat.js" type="Text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<link rel="stylesheet" type="text/css" href="watable.css">
+<style type="text/css">
+
+</style>
+</head>
+<body>
+<div id="wrap">
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand" href="#">Tiny Budget</a>
+          <div class="nav-collapse collapse">
+            <p class="nav navbar-text" data-bind="visible: loadstatus() >= 2" style="display:none;">Logged in as <span data-bind="text: username()"></span></p>
+              <p class="nav navbar-text" data-bind="visible: loadstatus() >= 2" style="display:none;"><a href="#" data-bind="click:function(){editAccount()}">edit</a></p>
+              <form class="navbar-form pull-right in_nav" data-bind="visible: loadstatus() >= 2" style="display:none;">
+                <button type="button" class="btn" data-bind="click: function(){startTrends()}">Trends</button>
+                <button type="button" class="btn" data-bind="click: function(){editCategories()}" id="tour_categories">Edit Categories</button>
+                <button type="button" class="btn" data-bind="click: function(){logout()}">Logout</button>
+              </form>
+
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div> <!-- end nav bar -->
+
+
+
+    <div class="container" id="app_container">
+
+
+      <!-- ==========   login signup  =============  -->
+
+        <span data-bind="visible: loadstatus() == 0">
+            <div class="hero-unit">
+                <h1>Tiny Budget</h1>
+                <p>Don&#39;t have a lot of money? Then you&#39;ll probably want to know where it&#39;s all going. Tiny Budget can help!</p>
+                <p><a href="#" class="btn btn-primary btn-large" data-bind="click:function(){startUserTour()}">Take the Tour &#187;</a></p>
+                <p>or <a href="#"  data-bind="click:function(){startTechTour()}">Take the Technical Tour</a></p>
+            </div>
+            <div class="center_items span12 login_div">
+                <div class="span6">
+                    <p class="lead">Log in...</p>
+                    <form class="form-horizontal" id="signin_form" name="signin_form" data-bind="submit: function(){login();}">
+                        <div class="control-group">
+                        <label class="control-label">Username</label>
+                        <div class="controls"><input type="text" placeholder="Username" id="uname" name="uname" data-bind="value:uname"></div>
+                        </div>
+                        <div class="control-group">
+                        <label class="control-label">Password</label>
+                        <div class="controls"><input type="password" placeholder="Password" id="pass" data-bind="value:upass"></div>
+                        </div>
+                    <div class="control-group">
+                        <div class="controls">
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </div>
+                    </div>
+                    </form>
+                </div>
+                <div class="span6">
+                    <p class="lead">...or sign up!</p>
+                    <form class="form-horizontal" id="signup_form" data-bind="submit: function(){newUser()}">
+                        <div class="control-group">
+                        <label class="control-label">Desired Username</label>
+                        <div class="controls"><input type="text" placeholder="Username" name="signup_uname" data-bind="value:signup_uname"></div>
+                        </div>
+                        <div class="control-group">
+                        <label class="control-label">Password</label>
+                        <div class="controls"><input type="password" placeholder="Password" name="signup_pass" data-bind="value:signup_pass"></div>
+                        </div>
+                        <div class="control-group">
+                        <label class="control-label">Email</label>
+                        <div class="controls"><input type="text" placeholder="Email" name="signup_email" data-bind="value:signup_email"></div>
+                        </div>
+                        <div class="control-group">
+                        <div class="controls">
+                            <button type="submit" class="btn btn-primary">Sign Up!</button>
+                        </div>
+                        </div>
+                        <span data-bind="if: signuperror() != ''">
+                        <div class="control-group">
+                            <div class="controls">
+                                <p class="text-error" data-bind="text: signuperror()"></p>
+                            </div>
+                        </div>
+                        </span>
+                    </form>
+                </div>
+            </div>    
+        </span>
+
+
+      <!-- ========  loading gif ========= -->
+
+        <span data-bind="visible: loadstatus() == 1" style="display:none;">
+            <div class="center_items span12 login_div">
+                <p class="lead loading">Loading...</p>
+                <div class="progress progress-striped active">
+                  <div class="bar" id="prgbartest" style="width:0%" data-bind="attr: { style: $root.loadBarWidth }"></div><!---->
+                </div>
+            </div>
+        </span>
+
+        <!-- wraps the app area so it displays only when data is loaded -->
+        <span data-bind="visible: loadstatus() >= 2" style="display:none;">
+
+
+            <!-- ========  input form   ======= -->
+            <div id="" class="center_items span12 input_div">
+                <div class="span9 input-div-container">
+                    <ul class="nav nav-pills">
+                        <li class="expense-or-payday active" data-inputtype="expense" data-bind="click: switchExpensePayday, css:{active:expenseOrPaydayActive() == 'expense'}"><a href="#">Input an Item</a></li>
+                        <li class="expense-or-payday" data-inputtype="payday" data-bind="click: switchExpensePayday, css:{active:expenseOrPaydayActive() == 'payday'}"><a href="#">Payday!</a></li>
+                    </ul>
+                    <!--p class="lead">Input an Item</p-->
+                    <form class="form-inline input_form" id="input_form"  data-bind="submit: addItem">
+                        <input id="validate_description" class="input-medium input_form_item input_form_item_val error" type="text" name="desc" placeholder="Descritption" data-bind="value:desc,css:{'input-error':input_error() == 'desc'}">
+                        <input id="validate_amount" class="input-medium input_form_item input_form_item_val" type="text" name="amt" data-toggle="tooltip" placeholder="Amount"  data-bind="value:amt,css:{'input-error':input_error() == 'amt'}">
+                        <select class="input-medium input_form_item" id="cat_select" name="cat" data-bind="disable: expenseOrPaydayActive() == 'payday',options:userCategories,value:cat">
+                            <option value="" data-bind="text: name, value: name"></option>
+                        </select>
+                        <input id="validate_date" type="text" class="input-small input_form_item_val input_form_item" name="date" placeholder="Date"  data-bind="value:input_date,css:{'input-error':input_error() == 'date'}">
+                        <button type="submit" class="btn btn-primary btn-mini" id="additem">Add</button>
+                    </form>
+                    <div id="input_error_div"><span data-bind="text: inputFeedback()"></span></div>
+                </div>
+                <div class="span3 month-select-container" >
+                    <p class="lead">Month:</p>
+                    <div class="form-inline month-select" id="tour_month_select">
+                        <button type="button" class="btn btn-inverse btn-mini pull-left" data-bind="click: decrementMonth">
+                        <i class="icon-chevron-left icon-white"></i>
+                        </button>
+                        <span data-bind="text: friendlymonth"></span>, <span data-bind="text: friendlyyear"></span>
+                        <button type="button" class="btn btn-inverse btn-mini pull-right" data-bind="click: incrementMonth">
+                            <i class="icon-chevron-right icon-white"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- spans the pie chart, highlight table, all items table so they only display when there are items to display -->
+            <span data-bind="visible: filteredUserItems().length > 0" style="display:none;">
+            
+                    <!-- =========  expense breakdown and pie chart  ========== -->
+                <div class="center_items span12 input_div">
+                    <div class="span12"><h2>By Category:</h2>
+                    </div>
+                    <div class="span5">
+
+                        <!-- expense breakdown table -->
+                        <table class="table watable" data-bind="ifnot: categoryHighlight()" id="tour_breakdown_table">
+                            <thead>
+                                <tr>
+                                <th>Category</th>
+                                <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: userCategoriesTotals">
+                                <tr>
+                                <td data-bind="text: name"></td>
+                                <td>$<span data-bind="text: amount"></span></td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                <td><strong>Total</strong></td>
+                                <td><strong>$<span data-bind="text:allCategoriesTotal()"></span></strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- category highlight table -->
+
+                        <table class="watable table" data-bind="if: categoryHighlight()" id="tour_highlight_table">
+                            <caption data-bind="text: categoryHighlight()"></caption>
+                            <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Desc</th>
+                                <th>Amount</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody data-bind="foreach: $root.categoryHighlightFilter">
+                            <tr data-bind="css: {error: isflagged }">
+                                <td data-bind="text: formattedDate()"></td>
+                                <td data-bind="text: desc" ></td>
+                                <td data-bind="text: amt"></td>
+                                <td><i class="icon-remove" data-bind="click: $root.removeItem" title="Delete"></i></td>
+                                <td><i class="icon-flag" data-bind="click: $root.flagItem" title="Flag"></i></td>
+                                <!-- ko if: (comment() != '') -->
+                                <td><i class="comment_blue" data-bind="click: $root.commentItem, attr: {title: comment}"></i></td>
+                                <!-- /ko -->
+                                <!-- ko if: (comment() == '') -->
+                                <td><i class="icon-comment" data-bind="click: $root.commentItem" title="Comment"></i></td>
+                                <!-- /ko -->
+                                </td>
+                            </tr>
+                            </tbody>
+                            <tfoot data-bind="foreach: $root.userCategoriesTotals">
+                            <!-- ko if: name == $root.categoryHighlight()-->        
+                                <tr>
+                                    <td></td>
+                                    <td><strong>Total:</strong></td>
+                                    <td><strong data-bind="text: '$'+amount"></strong></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <!-- /ko -->
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- pie chart -->
+                    <div class="span7">
+                        <div id="highchart"></div>
+                        <div class="pull-right">
+                            <label class="checkbox">
+                                <input type="checkbox" name="showUnspent" id="showUnspent" data-bind="checked:showUnspent"></input> Show Unspent Monies
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+
+
+        
+
+                <!-- all items table -->
+                <div class="input_div full_opacity span12 center_items category_table">
+                    <h2>All Items:</h2>
+                    <table class="watable table table-bordered table-hover table-condensed" id="tour_all_items">
+                        <thead>
+                        <tr>
+                            <th>Date <i class="icon-chevron-down" data-bind="click: function(){sortAllItemsTableDay()}"></i></th>
+                            <th>Description <i class="icon-chevron-down" data-bind="click: sortAllItemsTable.bind($data,'desc')"></i></th>
+                            <th>Category <i class="icon-chevron-down" data-bind="click: sortAllItemsTable.bind($data,'cat')"></i></th>
+                            <th>Amount <i class="icon-chevron-down" data-bind="click: function(){sortAllItemsTableAmt()}"></i></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody  data-bind="foreach: filteredUserItems">
+                        <tr data-bind="css: {error: isflagged }">
+                            <td data-bind="text: formattedDate()"></td>
+                            <td data-bind="text: desc" ></td>
+                            <td data-bind="text: cat" ></td>
+                            <td data-bind="css:{'text-error':$data.cat!=='payday','text-success':$data.cat=='payday'}">$<span data-bind="text: amt"></sapn></td>
+                            <td data-bind=""><i class="icon-remove" data-bind="click: $root.removeItem" title="Delete"></i></td>
+                            <td data-bind=""><i class="icon-flag" data-bind="click: $root.flagItem" title="Flag"></i></td>
+                            <!-- ko if: (comment() != '') -->
+                            <td data-bind=""><i class="comment_blue" data-bind="click: $root.commentItem, attr: {title: comment()}"></i></td>
+                            <!-- /ko -->
+                            <!-- ko if: (comment() == '') -->
+                            <td data-bind=""><i class="icon-comment" data-bind="click: $root.commentItem" title="Comment"></i></td>
+                            <!-- /ko -->
+                            </tr>
+                        </tbody>
+                        <tfoot> 
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td><strong class="pull-right">All Paydays:</strong></td>
+                                <td><strong>$<span data-bind="text: $root.paydayTotal()"></span></strong></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>    
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td><strong class="pull-right">All Items:</strong></td>
+                                <td><strong>$<span data-bind="text: $root.allCategoriesTotal()"></span></strong></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td><strong class="pull-right">Difference:</strong></td>
+                                <td><strong><span data-bind="if:$root.difference()<0">&ndash;</span>$<span data-bind="text: $root.friendlyDifference()"></span></strong></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </span> <!-- end of filteredUserItems > 0 -->
+
+            <!-- you have no items section -->
+
+            <span data-bind="visible: filteredUserItems().length == 0">
+                <div class="span12 no-items" style="background-color:gray">
+                    <h2>You dont have any items for <span data-bind="text: friendlymonth()"></span>, <span data-bind="text:friendlyyear()"></span></h2>
+
+                </div>
+            </span>
+        </span> <!-- end of loadstatus 2 area -->
+
+    </div> <!-- /container -->
+    
+
+
+    <!-- ========= modals ========= -->
+
+    <div id="categories_modal" class="modal hide fade in" data-bind="css:{hide: modalStatus() != 'categories'}">
+      <div class="modal-header">
+        <button type="button" class="close" data-bind="click: function(){modalClose()}" aria-hidden="true">&times;</button>
+        <!-- ko if: userCategoriesLength() == 0 -->
+        <h4 id="categories_modal_header">You have no spending categories</h4>
+        <!-- /ko -->
+        <!-- ko if: userCategoriesLength() > 0 -->
+        <h4 id="categories_modal_header">Your Spending Categories</h4>
+        <!-- /ko -->
+      </div>
+      <div class="modal-body narrow-modal-body" id="tour_input_categories">
+        <span data-bind="text: categoryFeedback()" class="categoryFeedback"></span>
+        <form class="form-inline" data-bind="submit: addCategory">
+          <input type="text" class="input-medium" name="addCategory_value" data-bind="value:addCatValue,css: {'input-error': categoryValidateState() == 'error'}">
+          <button type="submit" class="btn btn-primary" >Add</button>
+        </form>
+        <ul data-bind="foreach: userCategories" id="tour_category_list">
+        <li class="categorylist" data-bind="click: $root.removeCategory">
+                <!--ko text:$data--><!--/ko-->
+                <i class='icon-float icon-remove'></i> 
+          </li>
+        </ul>
+        <span data-bind="if: unusedCategories().length > 0">
+        <p id="tour_unused_categories">This month has items with these categories:</p>
+        <ul data-bind="foreach: unusedCategories">
+          <li class="categorylist" data-bind="text: name"></li>
+        </ul>
+        </span>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" type="button" data-bind="click: function(){modalClose()}">Okay</button>
+      </div>
+    </div>
+
+
+
+    <div id="logout_modal" class="modal hide fade in" data-bind="css:{hide: modalStatus() != 'logout'}">
+      <div class="modal-header">
+        <button type="button" class="close" data-bind="click: function(){modalClose()}" aria-hidden="true">&times;</button>
+        <h4>You've been logged out</h4>
+      </div>
+      <div class="modal-body"></div>
+    </div>
+
+    <div id="about_modal" class="modal hide fade in" data-bind="css:{hide: modalStatus() != 'about'}">
+      <div class="modal-header">
+        <button type="button" class="close" data-bind="click:modalClose" aria-hidden="true">&times;</button>
+        <h4>Tiny Budget<small><em> - Demonstration</em></small></h4>
+      </div>
+      <div class="modal-body">
+        <p>2013<p>
+        <p>Ryan Robinson</p>
+        <p>Client application uses Knockout, Twitter Bootstrap, and Highcharts.</p>
+        <p>Server is NodeJS storing user data on redis.</p>
+        <p>Deployed using AWS ec2 instance.</p>
+        <p><a href="docstable.html">more info</a></p>
+      </div>
+    </div>
+
+    <div id="tour_modal" class="modal hide fade in" data-bind="css:{hide: modalStatus() != 'tour'}">
+      <div class="modal-header">
+        <h4>Tiny Budget<small><em> - Demonstration</em></small></h4>
+      </div>
+      <div class="modal-body">
+        <p>Tiny Budget helps you keep track of your personal expenses through categorizing. To start, you need to set up your categories. Once that's done you can start inputing your items.</p>
+      </div>
+      <div class="modal-footer">
+          <button class="btn" type="button" data-bind="click: function(){modalClose();endTour();}">I Don&#39;t Need the Tour</button>
+        <button class="btn btn-primary" type="button" data-bind="click: function(){continueUserTour()}">Take the Tour</button>
+      </div>
+    </div>
+
+    <div id="tech_modal" class="modal hide fade in" data-bind="css:{hide: modalStatus() != 'tech'}">
+      <div class="modal-header">
+        <h4>Tiny Budget<small><em> - Demonstration</em></small></h4>
+      </div>
+      <div class="modal-body">
+        <p>Tiny budget is built on a simple API that uses URI paths and queries to interact with the server <a href="docstable.html" target="_blank">(full API doc here)</a>. After logging in and getting a temporary session variable, the app calls for <em>getInit</em> which returns the last 3 months of items and categories in JSON. The app adds each item to userItems and each category to userCategires, both Knockout observable arrays. A few functions subscribe to changes in userItems and filter the array down to the current month in view, then into individial categories.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" type="button" data-bind="click: function(){continueTechTour()}">Continue</button>
+      </div>
+    </div>
+
+    
+    <div id="account_modal" class="modal hide fade in" data-bind="css:{hide: modalStatus() != 'account'}">
+      <div class="modal-header">
+      <button type="button" class="close" data-bind="click: function(){modalClose()}" aria-hidden="true">&times;</button>
+        <h4>Your Account</small></h4>
+      </div>
+      <div class="modal-body">
+        <p class="muted" data-bind="if:username()=='demo'">These settings are disabled in the demo</p>
+        <p>Change Password</p>
+            <form class="form-horizontal" id="changepass_form" name="changepass_form" data-bind="submit:function(){changePass();}">
+                <div class="control-group">
+                    <label class="control-label">Old Password:</label>
+                    <div class="controls"><input type="text" placeholder="" name="oldPass" data-bind="value:oldPass,enable:username()!='demo'"></div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">New Password:</label>
+                    <div class="controls"><input type="password" placeholder="" name="newPass" data-bind="value:newPass,enable:username()!='demo'"></div>
+                </div>
+                <span data-bind="foreach:changePassError">
+                <div class="control-group">
+                    <div class="controls">
+                        <p data-bind="text:message,css:{'text-error':level=='error','text-success':level=='success'}"></p>
+                    </div>
+                </div>
+                </span>
+                <div class="controls">
+                        <button type="submit" class="btn btn-primary" data-bind="enable:username()!='demo'">Save</button>
+                    </div>
+            </form>
+          <hr />
+          <p>Change Email</p>
+            <form class="form-horizontal" name="changeEmail_form" data-bind="submit: function(){changeEmail();}">
+                <div class="control-group">
+                    <label class="control-label">Email:</label>
+                    <div class="controls">
+                        <input type="text" placeholder="" name="email" data-bind="value:userEmail,enable:username()!='demo'">
+                        <span class="help-block">Email is used for resetting passwords</span>
+                    </div>
+                    <span data-bind="foreach:changeEmailError">
+                        <div class="control-group">
+                            <div class="controls">
+                                <p data-bind="text:message,css:{'text-error':level=='error','text-success':level=='success'}"></p>
+                            </div>
+                        </div>
+                    </span>
+                    <div class="control-group">
+                    <div class="controls"><button type="submit" class="btn btn-primary" data-bind="enable:username()!='demo'">Save</button></div>
+                    </div>
+                </div>
+                </form> 
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" type="button" data-bind="click: function(){modalClose()}">Okay</button>
+      </div>
+    </div>
+
+    <div id="push"></div>
+
+</div> <!-- end wrap -->
+
+
+
+
+
+<div id="footer" data-bind="visibile: loadstatus() !== 1">
+    <div class="container">
+        <div class="span12">
+            <p class="muted pull-center"><a href="#" class="btn" data-bind="click: showAbout">About</a> </p>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="jquery.cookie.js"></script>
+<script type="text/javascript" src="bootstrap-modal.js"></script>
+<script type="text/javascript" src="bootstrap-datepicker.js"></script>
+<script type="text/javascript" src="bootstrap-tooltip.js"></script>
+<script type="text/javascript" src="bootstrap-popover.js"></script>
+<script type="text/javascript" src="bootstrap-tour.js"></script>
+<script src="highcharts.js"></script>
+<script type="text/javascript" src="knockout_viewmodel.js"></script>
+
+</body>
+</html>
