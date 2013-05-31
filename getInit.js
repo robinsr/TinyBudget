@@ -14,6 +14,11 @@ var getInit = (function(){
                     //console.log('error get Init')
                 } else {
                     datai = JSON.parse(datai);
+                    
+                        // set the date with info from server
+                    tinybudget.viewmodel.date = JSON.parse(JSON.stringify(datai.date));
+                    tinybudget.viewmodel.currentyear(tinybudget.viewmodel.date.year);
+                    tinybudget.viewmodel.currentmonth(tinybudget.viewmodel.date.month);
                     //console.log(datai)
                     tinybudget.viewmodel.user.categories = JSON.parse(JSON.stringify(datai.categories));
                     
