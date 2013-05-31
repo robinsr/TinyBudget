@@ -182,6 +182,7 @@ function getInit(req, res, query) {
             return;
         } else {
             var return_ob = {};
+            return_ob.date = JSON.parse(JSON.stringify(todays_date));
             return_ob.items = [];
             client.smembers("cat:" + query.name, function (err, user_cats) {
                 if (err) {
