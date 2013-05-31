@@ -3,7 +3,7 @@
     // the main viewmodel for this app
 function AppViewModel() {
     var self = this; 
-    var setDate = function(){
+    /*var setDate = function(){
         var d = new Date();
         var e = new Date();
         var f = new Date();
@@ -22,13 +22,12 @@ function AppViewModel() {
             two_month_back: f.getMonth()+1,
             two_month_back_yr: f.getFullYear()
         }
-    }
-    self.date = setDate();
-    
+    }*/
+    self.date;
+    self.currentyear = ko.observable();
+    self.currentmonth = ko.observable();
     self.loadedMonths = ko.observableArray([]);  // loadstatus: 0: logged out, 1: logged in no data, 2: logged in with data, 3: loading additional data
     self.loadstatus = ko.observable(0);
-    self.currentyear = ko.observable(self.date.year);
-    self.currentmonth = ko.observable(self.date.month);
     self.signuperror = ko.observable(0);
     self.inputFeedback = ko.observable('');
     self.expenseOrPaydayActive = ko.observable("expense");
