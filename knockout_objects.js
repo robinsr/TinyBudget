@@ -1,4 +1,3 @@
-// hi I cahnged this file
 // ===============  KNOCKOUT CUSTOM FUNCTIONS ==============
 
 
