@@ -6,7 +6,8 @@ var app = require('http').createServer(handler)
   , nodeurl = require('url')
   , crypto = require('crypto')
   , qs = require('qs')
-  , util = require('util');
+  , util = require('util')
+  , moment = require('moment');
 
 var mimeType = {
     '.js': 'text/javascript',
@@ -23,24 +24,19 @@ var mimeType = {
     '': 'text/html'
 };
 var todays_date = {}
-function setTodaysDate() {
-    var d = new Date();
-    var e = new Date();
-    var f = new Date();
-    with (e) {
-        setMonth(getMonth() - 1);
-    }
-    with (f) {
-        setMonth(getMonth() - 2);
-    }
+
+    // some really weird stuff happens here arount the 30th and 31st of some months
+    // date object results in month: 5, one_month_back: 5, two_month_back: 3. 5, 5, and 3????
+    // moved to moment.js to see if dates are more consistent
+function setTodaysDate() {    
     todays_date = {
-        year: d.getFullYear(),
-        day: d.getDate(),
-        month: d.getMonth() + 1,
-        one_month_back: e.getMonth() + 1,
-        one_month_back_yr: e.getFullYear(),
-        two_month_back: f.getMonth() + 1,
-        two_month_back_yr: f.getFullYear()
+        year: moment().year(),
+        day: moment().day(),
+        month: moment().month() + 1,
+        one_month_back: moment().subtract('month',1).month() + 1,
+        one_month_back_yr: moment().subtract('month',1).year(),
+        two_month_back: moment().subtract('month',2).month() + 1,
+        two_month_back_yr: moment().subtract('month',2).year()
     }
 
     console.log(util.inspect(todays_date))
@@ -186,6 +182,7 @@ function getInit(req, res, query) {
             return;
         } else {
             var return_ob = {};
+            return_ob.date = JSON.parse(JSON.stringify(todays_date));
             return_ob.items = [];
             client.smembers("cat:" + query.name, function (err, user_cats) {
                 if (err) {
@@ -211,6 +208,7 @@ function getInit(req, res, query) {
                             return
                         } else {
                             client.smembers(recent_month_keys[counter], function (er5, members) {
+                                console.log(recent_month_keys[counter]);
                                 var counter_i = 0;
                                 function sweep() {
                                     if (members[counter_i]) {

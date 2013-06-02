@@ -12,7 +12,7 @@ is_ie8_or_newer = true;
 </script>
 <![endif]-->
 <title>Tiny Budget</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <script type="text/javascript" src="loader.js"></script>
 <link rel="stylesheet" type="text/css" href="bootstrap/bootstrap.min.css">
 <link rel="stylesheet" type="text/css" href="style.css">
@@ -57,11 +57,11 @@ is_ie8_or_newer = true;
                     <form class="form-horizontal" id="signin_form" name="signin_form" data-bind="submit: function(){login();}">
                         <div class="control-group">
                         <label class="control-label">Username</label>
-                        <div class="controls"><input type="text" placeholder="Username" id="uname" name="uname" data-bind="value:uname"></div>
+                        <div class="controls"><input autocorrect="off" autocomplete="off" autocapitalize="off" type="text" placeholder="Username" id="uname" name="uname" data-bind="value:uname"></div>
                         </div>
                         <div class="control-group">
                         <label class="control-label">Password</label>
-                        <div class="controls"><input type="password" placeholder="Password" id="pass" data-bind="value:upass"></div>
+                        <div class="controls"><input autocorrect="off" autocomplete="off" autocapitalize="off" type="password" placeholder="Password" id="pass" data-bind="value:upass"></div>
                         </div>
                     <div class="control-group">
                         <div class="controls">
