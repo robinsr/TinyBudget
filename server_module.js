@@ -8,7 +8,7 @@ var server = (function(){
             ['month',month]
             ], null, function(err,stat,message){
                 
-            if (err) {
+            if (err || stat == 400) {
                 //console.log('error getMonth')
             } else {
                 var datai = JSON.parse(message);
