@@ -19,7 +19,7 @@ $(function(){
 
 // ===========  Utils module =============
 var tinybudgetutils = (function(){
-    function ajaxFunction () {
+    /*function ajaxFunction () {
         var xmlhttp;
         try {
             xmlhttp = new XMLHttpRequest();
@@ -37,7 +37,7 @@ var tinybudgetutils = (function(){
             
         }
         return xmlhttp;
-    }
+    }*/
 
 	return {
 		currency_tooltip: $("#validate_amount").mouseover(function () {
@@ -69,7 +69,7 @@ var tinybudgetutils = (function(){
 	        		return
 	        	},
 	        	complete: function(data){
-	        		cb(null,200,data.responseText);
+	        		cb(null,data.status,data.responseText);
 	        		return
 	        	}
 	        });
