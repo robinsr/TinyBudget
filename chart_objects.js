@@ -14,8 +14,6 @@ var chart_objects = (function(){
 	        },
 	        tooltip: {
 	            enabled: false
-	            //pointFormat: '<b>{point.percentage}%</b>',
-	            //percentageDecimals: 1
 	        },
 	        plotOptions: {
 	            pie: {
@@ -29,8 +27,7 @@ var chart_objects = (function(){
 	                    formatter: function () {
 	                        return '<b>' + this.point.name + '</b>: $' + this.point.y;
 	                    }
-
-	                },
+	                }
 	            }
 	        },
 	        series: [{
