@@ -648,7 +648,7 @@ function serveStatic(req, res) {
         }
         else {
             res.writeHead(404, { 'Content-Type': 'text/plain' });
-            res.end('404 - Not Found - Dev');
+            res.end('404 - Not Found - '+filePath);
         }
     });
 }
@@ -722,7 +722,7 @@ function handler(req, res) {
         } else {
 
             // dev server only, remove for production
-            req.url = req.url.replace('/dev', '');
+            req.url = req.url.replace('/TinyBudget', '');
 
 
             var q = qs.parse(nodeurl.parse(req.url).query);
