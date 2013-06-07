@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Tiny Budget</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="bootstrap/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="bootstrap/bootstrap-responsive.css">	
+	<script type="text/javascript" src="resources/jquery-1.8.3.min.js"></script>
+	<script type="text/javascript" src="bootstrap/bootstrap.min.js"></script>
+</head>
+<body>
+</body>
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+
+          <a class="brand" href="#">Tiny Budget</a>
+          
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+    	<div class="row-fluid">
+    		<div class="span-3">
+    			<form id="quickInputForm" onsubmit="return false">
+				  <fieldset>
+				    <label>UserName</label>
+				    <input class="span-3" type="text" placeholder="" name="username">
+				    <label>Password</label>
+				    <input class="span-3" type="text" placeholder="" name="password">
+				    <label>Item Description</label>
+				    <input class="span-3" type="text" placeholder="" name="desc">
+				    <label>Amt</label>
+				    <input class="span-3" type="text" placeholder="" name="amt">
+				    <label>Date</label>
+				    <input class="span-3" type="text" placeholder="" name="date">
+				    <button type="submit" class="btn btn-primary span-3">Submit</button>
+				  </fieldset>
+				</form>
+
+    		</div>
+    	</div>
+    </div>
+
+<script type="text/javascript">
+window.onload = function(){
+	var formFunction = $("#quickInputForm").submit(function(){
+		var form = $(this).serializeArray();
+
+		console.log(form);
+	});
+}
+</script>
+
+
+
+</html>

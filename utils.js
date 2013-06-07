@@ -19,7 +19,7 @@ $(function(){
 
 // ===========  Utils module =============
 var tinybudgetutils = (function(){
-    function ajaxFunction () {
+    /*function ajaxFunction () {
         var xmlhttp;
         try {
             xmlhttp = new XMLHttpRequest();
@@ -37,7 +37,7 @@ var tinybudgetutils = (function(){
             
         }
         return xmlhttp;
-    }
+    }*/
 
 	return {
 		currency_tooltip: $("#validate_amount").mouseover(function () {
@@ -61,7 +61,19 @@ var tinybudgetutils = (function(){
 	            }
 	        }
 	        //console.log(url);
-	        var xmlhttp = new ajaxFunction();
+	        $.ajax({
+	        	url: url,
+	        	type: 'get',
+	        	error: function(data){
+	        		cb(true);
+	        		return
+	        	},
+	        	complete: function(data){
+	        		cb(null,data.status,data.responseText);
+	        		return
+	        	}
+	        });
+	        /*var xmlhttp = new ajaxFunction();
 	        var data;
 	        var method;
 	        if (JSON) {
@@ -81,7 +93,7 @@ var tinybudgetutils = (function(){
 	                cb(true);
 	                return;
 	            }
-	        }
+	        }*/
 	    }
 	}
 })();

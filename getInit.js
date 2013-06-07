@@ -4,7 +4,7 @@ var getInit = (function(){
         // to their respective arrays. triggers the load status to '2' so the rest of the view will appear and enables 
         // form fiends so the user can input items
         main : function () {
-            console.log('main called');
+            //console.log('main called');
             tinybudget.viewmodel.modalStatus("");
             tinybudgetutils.issue('getInit', [
                 ['name', tinybudget.viewmodel.user.name],
@@ -38,7 +38,7 @@ var getInit = (function(){
                         var count = 0
                         
                         function run(){
-                            console.log(count,datai.items.length - 2);
+                            //console.log(count,datai.items.length - 2);
                             var progress = Math.floor((count/datai.items.length)*100);
                             if (progress % 10 == 0){
                                 tinybudget.viewmodel.loadBarProgress(progress);
@@ -49,7 +49,7 @@ var getInit = (function(){
                                     // on the last item. if it was minus 1 then the subscribed funtion wouldn't run since all items are loaded.
                                     // One more item remains to be loaded therefore we dont return the block right here.
                             if (count == datai.items.length - 2) {
-                                console.log('loadstatus2 at run');
+                                //console.log('loadstatus2 at run');
                                 tinybudget.viewmodel.loadstatus(2);
                             }
                             
