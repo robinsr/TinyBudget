@@ -61,7 +61,12 @@ var tinybudgetutils = (function(){
 	            }
 	        }
 	        //console.log(url);
-	        var xmlhttp = new ajaxFunction();
+	        $.get(url,function(data){
+	        	cb(null,200,data);
+	        }).fail(function(){
+	        	cb(true);
+	        })
+	        /*var xmlhttp = new ajaxFunction();
 	        var data;
 	        var method;
 	        if (JSON) {
@@ -81,7 +86,7 @@ var tinybudgetutils = (function(){
 	                cb(true);
 	                return;
 	            }
-	        }
+	        }*/
 	    }
 	}
 })();
