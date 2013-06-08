@@ -27,7 +27,7 @@ is_ie = true;
             <p class="nav navbar-text" data-bind="visible: loadstatus() >= 2" style="display:none;">Logged in as <span data-bind="text: username()"></span></p>
               <p class="nav navbar-text" data-bind="visible: loadstatus() >= 2" style="display:none;"><a href="#" data-bind="click:function(){editAccount()}">edit</a></p>
               <form class="navbar-form pull-right in_nav" data-bind="visible: loadstatus() >= 2" style="display:none;">
-                <button type="button" class="btn" data-bind="click: function(){startTrends()}">Trends</button>
+                <button type="button" class="btn" data-bind="click: function(){startCSV()}">Upload CSV File</button>
                 <button type="button" class="btn" data-bind="click: function(){editCategories()}" id="tour_categories">Edit Categories</button>
                 <button type="button" class="btn" data-bind="click: function(){logout()}">Logout</button>
               </form>
