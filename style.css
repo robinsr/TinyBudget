@@ -124,6 +124,10 @@ height: 40px;
 .categoryFeedback {
     color: #b10000;
 }
+#csv_modal {
+  width:760px;
+  margin-left: -380px;
+}
 
 
 /*!
