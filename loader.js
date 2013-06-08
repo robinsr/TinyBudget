@@ -28,6 +28,7 @@ head.js(
     "chart_objects.js",
     "knockout_objects.js",
     "knockout_viewmodel.js",
+    "CSVparser.js",
     
     function(){
         console.log('all done');   
@@ -35,4 +36,6 @@ head.js(
 
         ko.applyBindings(tinybudget.viewmodel);
         document.forms.signin_form.uname.focus();
+
+        CSVFileReader.main();
 })
