@@ -721,6 +721,9 @@ function AppViewModel() {
     self.showAbout = function(){
         self.modalStatus("about");
     }
+    self.startCSV = function(){
+        self.modalStatus("csv");
+    }
 
     // ===========   Application Tours   ===========  
 
