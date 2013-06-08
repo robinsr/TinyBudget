@@ -463,6 +463,21 @@ is_ie = true;
       </div>
     </div>
 
+
+    <div id="csv_modal" class="modal hide fade in" data-bind="css:{hide: modalStatus() != 'csv'}">
+      <div class="modal-header">
+        <h4>CSV Upload</h4>
+      </div>
+      <div class="modal-body">
+        <input type="file" id="CSVinput" name="files[]" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" type="button" data-bind="click: function(){modalClose()}">Okay</button>
+      </div>
+    </div>
+
+
+
     <div id="push"></div>
 
 </div> <!-- end wrap -->
