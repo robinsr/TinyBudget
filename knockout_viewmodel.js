@@ -68,6 +68,7 @@ function AppViewModel() {
     });
     
     self.incrementMonth = function(){
+        console.log(arguments.callee.caller.toString());
         self.categoryHighlight(null);
         if (self.currentmonth() == 12){
             self.currentmonth(1)
@@ -775,6 +776,3 @@ function AppViewModel() {
 
 }
 var tinybudget = { viewmodel: new AppViewModel()};
-
-ko.applyBindings(tinybudget.viewmodel);
-        document.forms.signin_form.uname.focus();
