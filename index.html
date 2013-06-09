@@ -474,37 +474,39 @@ is_ie = true;
       <div class="modal-header">
       <button type="button" class="close" data-bind="click: function(){modalClose()}" aria-hidden="true">&times;</button>
         <h4>Edit Item</small></h4>
-        <p class="muted" data-bind="text:update_id"></p>
+        <p class="muted" data-bind="text:editableItem().itemid"></p>
       </div>
       <div class="modal-body">
-            <form class="form-horizontal" id="changepass_form" name="changepass_form" data-bind="submit:function(){updateItem();}">
+            <form class="form-horizontal" data-bind="submit:function(){updateItem();},with:editableItem()">
                 <div class="control-group">
                     <label class="control-label">Date:</label>
-                    <div class="controls"><input type="text" data-bind="value:update_date"></div>
+                    <div class="controls"><input type="text" data-bind="value:editDate"></div>
                 </div>
                 <div class="control-group">
                     <label class="control-label">Description:</label>
-                    <div class="controls"><input type="text" data-bind="value:update_desc"></div>
+                    <div class="controls"><input type="text" data-bind="value:desc"></div>
                 </div>
                 <div class="control-group">
                     <label class="control-label">Category:</label>
                     <div class="controls">
-                        <select data-bind="options:userCategories,value:update_cat">
-                            
-                        </select>
+                        <p class="help-block" data-bind="visible: cat == 'payday'">This Item is a PayDay</p>
+                        <select data-bind="disable: cat == 'payday',options:$root.userCategories,value:cat"></select>
+                      
+                        
+                      
                     </div>
                 </div>
                 <div class="control-group">
                     <label class="control-label">Amount:</label>
-                    <div class="controls"><input type="text" data-bind="value:update_amt"></div>
+                    <div class="controls"><input type="text" data-bind="value:amt"></div>
                 </div>
                 <div class="control-group">
                     <label class="control-label">Comment:</label>
-                    <div class="controls"><textarea data-bind="value:update_comment"></textarea></div>
+                    <div class="controls"><textarea data-bind="value:comment()"></textarea></div>
                 </div>
                 <div class="control-group">
                     <label class="control-label">Flag:</label>
-                    <div class="controls"><input type="checkbox" data-bind="checked:update_flag"></div>
+                    <div class="controls"><input type="checkbox" data-bind="checked:isflagged()"></div>
                 </div>
                 <div class="controls">
                         <button type="submit" class="btn btn-primary">Save</button>
