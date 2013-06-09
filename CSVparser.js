@@ -47,10 +47,10 @@ var CSVFileReader = (function(){
 
 		if (docData.amountIndex == null && (docData.debitIndex != null && docData.creditIndex != null)){
 			console.log('parse using debit/credit');
-			parseDC(docData);
+			return parseDC(docData);
 		} else if (docData.amountIndex != null && (docData.debitIndex == null && docData.creditIndex == null)){
 			console.log('parse using amount');
-			parseA(docData);
+			return parseA(docData);
 		} else {
 			console.log('send error');
 		}
@@ -75,7 +75,7 @@ var CSVFileReader = (function(){
 
 			parsedItems.push(thisItem);
 		}
-		console.log(parsedItems);
+		return parsedItems;
 	}
 	function parseDC(docData){
 		var parsedItems = [];
@@ -101,7 +101,7 @@ var CSVFileReader = (function(){
 
 			parsedItems.push(thisItem);
 		}
-		console.log(parsedItems);
+		return parsedItems;
 	}
 	return {
 		main: function(){
@@ -124,7 +124,19 @@ var CSVFileReader = (function(){
 
 			  			reader.onload = (function(theFile){
 			  				return function(e) {
-			  					parseCSV(e.target.result);
+			  					var parsed = parseCSV(e.target.result);
+			  					console.log(parsed);
+
+			  						// look for duplicate items in viewmodel
+
+			  					/*tinybudget.viewmodel.userItems.push(new rowitem(true, 
+			  						datai.items[count].desc, 
+			  						datai.items[count].amt, 
+			  						datai.items[count].year + "/" + datai.items[count].month + "/" + datai.items[count].day, 
+			  						datai.items[count].cat, 
+			  						datai.items[count].itemid, 
+			  						(datai.items[count].isflagged=="true"), 
+			  						datai.items[count].comment));*/
 			  				}
 			  			})(file[0]);
 
