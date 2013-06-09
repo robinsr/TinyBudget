@@ -62,13 +62,18 @@ function AppViewModel() {
     self.signup_email = ko.observable("");
     self.modalStatus = ko.observable("");
     self.onTour = ko.observable(0);// 0 not onTour; 1 User Tour; 2 Tech Tour    
+    self.update_date = ko.observable();
+    self.update_desc = ko.observable();
+    self.update_cat = ko.observable();
+    self.update_amt = ko.observable();
+    self.update_comment = ko.observable();
+    self.update_flag = ko.observable();
     
     self.loadedMonths.subscribe(function(array){
         //console.log('added to loaded months '+array[array.length-1]);
     });
     
     self.incrementMonth = function(){
-        console.log(arguments.callee.caller.toString());
         self.categoryHighlight(null);
         if (self.currentmonth() == 12){
             self.currentmonth(1)
