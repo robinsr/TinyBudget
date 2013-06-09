@@ -273,7 +273,7 @@ is_ie = true;
                             <!-- ko if: (comment() == '') -->
                             <td><i class="icon-comment" data-bind="click: $root.commentItem" title="Comment"></i></td>
                             <!-- /ko -->
-                            <td><i class="icon-pencil" data-bind="click: editItem" title="Edit"></i></td>
+                            <td><i class="icon-pencil" data-bind="click: $root.loadItemForEdit" title="Edit"></i></td>
                             </tr>
                         </tbody>
                         <tfoot> 
@@ -474,6 +474,7 @@ is_ie = true;
       <div class="modal-header">
       <button type="button" class="close" data-bind="click: function(){modalClose()}" aria-hidden="true">&times;</button>
         <h4>Edit Item</small></h4>
+        <p class="muted" data-bind="text:update_id"></p>
       </div>
       <div class="modal-body">
             <form class="form-horizontal" id="changepass_form" name="changepass_form" data-bind="submit:function(){updateItem();}">
@@ -487,7 +488,11 @@ is_ie = true;
                 </div>
                 <div class="control-group">
                     <label class="control-label">Category:</label>
-                    <div class="controls"><input type="text" data-bind="value:update_cat"></div>
+                    <div class="controls">
+                        <select data-bind="options:userCategories,value:update_cat">
+                            
+                        </select>
+                    </div>
                 </div>
                 <div class="control-group">
                     <label class="control-label">Amount:</label>
