@@ -256,6 +256,7 @@ is_ie = true;
                             <th></th>
                             <th></th>
                             <th></th>
+                            <th></th>
                         </tr>
                         </thead>
                         <tbody  data-bind="foreach: filteredUserItems">
@@ -264,14 +265,15 @@ is_ie = true;
                             <td data-bind="text: desc" ></td>
                             <td data-bind="text: cat" ></td>
                             <td data-bind="css:{'text-error':$data.cat!=='payday','text-success':$data.cat=='payday'}">$<span data-bind="text: amt"></sapn></td>
-                            <td data-bind=""><i class="icon-remove" data-bind="click: $root.removeItem" title="Delete"></i></td>
-                            <td data-bind=""><i class="icon-flag" data-bind="click: $root.flagItem" title="Flag"></i></td>
+                            <td><i class="icon-remove" data-bind="click: $root.removeItem" title="Delete"></i></td>
+                            <td><i class="icon-flag" data-bind="click: $root.flagItem" title="Flag"></i></td>
                             <!-- ko if: (comment() != '') -->
-                            <td data-bind=""><i class="comment_blue" data-bind="click: $root.commentItem, attr: {title: comment()}"></i></td>
+                            <td><i class="comment_blue" data-bind="click: $root.commentItem, attr: {title: comment()}"></i></td>
                             <!-- /ko -->
                             <!-- ko if: (comment() == '') -->
-                            <td data-bind=""><i class="icon-comment" data-bind="click: $root.commentItem" title="Comment"></i></td>
+                            <td><i class="icon-comment" data-bind="click: $root.commentItem" title="Comment"></i></td>
                             <!-- /ko -->
+                            <td><i class="icon-pencil" data-bind="click: editItem" title="Edit"></i></td>
                             </tr>
                         </tbody>
                         <tfoot> 
@@ -280,6 +282,7 @@ is_ie = true;
                                 <td></td>
                                 <td><strong class="pull-right">All Paydays:</strong></td>
                                 <td><strong>$<span data-bind="text: $root.paydayTotal()"></span></strong></td>
+                                <td></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
@@ -292,12 +295,14 @@ is_ie = true;
                                 <td></td>
                                 <td></td>
                                 <td></td>
+                                <td></td>
                             </tr>
                             <tr>
                                 <td></td>
                                 <td></td>
                                 <td><strong class="pull-right">Difference:</strong></td>
                                 <td><strong><span data-bind="if:$root.difference()<0">&ndash;</span>$<span data-bind="text: $root.friendlyDifference()"></span></strong></td>
+                                <td></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
@@ -463,6 +468,50 @@ is_ie = true;
       </div>
     </div>
 
+    <!-- ==============  Edit Item Modal ================== -->
+
+    <div id="item_modal" class="modal hide fade in" data-bind="css:{hide: modalStatus() != 'edit'}">
+      <div class="modal-header">
+      <button type="button" class="close" data-bind="click: function(){modalClose()}" aria-hidden="true">&times;</button>
+        <h4>Edit Item</small></h4>
+      </div>
+      <div class="modal-body">
+            <form class="form-horizontal" id="changepass_form" name="changepass_form" data-bind="submit:function(){updateItem();}">
+                <div class="control-group">
+                    <label class="control-label">Date:</label>
+                    <div class="controls"><input type="text" data-bind="value:update_date"></div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Description:</label>
+                    <div class="controls"><input type="text" data-bind="value:update_desc"></div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Category:</label>
+                    <div class="controls"><input type="text" data-bind="value:update_cat"></div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Amount:</label>
+                    <div class="controls"><input type="text" data-bind="value:update_amt"></div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Comment:</label>
+                    <div class="controls"><textarea data-bind="value:update_comment"></textarea></div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Flag:</label>
+                    <div class="controls"><input type="checkbox" data-bind="checked:update_flag"></div>
+                </div>
+                <div class="controls">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+            </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" type="button" data-bind="click: function(){modalClose()}">Okay</button>
+      </div>
+    </div>
+
+    <!-- =================  CSV input Modal =========== -->
 
     <div id="csv_modal" class="modal hide fade in" data-bind="css:{hide: modalStatus() != 'csv'}">
       <div class="modal-header">
