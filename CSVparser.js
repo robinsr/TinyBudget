@@ -1,4 +1,5 @@
 var CSVFileReader = (function(){
+	var replace_string = "POS Withdrawal ";
 	function parseCSV(data){
 		var parsed;
 		var lines = data.replace(/\"/g,"");
@@ -43,16 +44,16 @@ var CSVFileReader = (function(){
 			docData.ignoreLine.push(0);
 		}
 
-		console.log(docData);
+		//console.log(docData);
 
 		if (docData.amountIndex == null && (docData.debitIndex != null && docData.creditIndex != null)){
-			console.log('parse using debit/credit');
+			//console.log('parse using debit/credit');
 			return parseDC(docData);
 		} else if (docData.amountIndex != null && (docData.debitIndex == null && docData.creditIndex == null)){
-			console.log('parse using amount');
+			//console.log('parse using amount');
 			return parseA(docData);
 		} else {
-			console.log('send error');
+			//console.log('send error');
 		}
 
 		
@@ -60,15 +61,24 @@ var CSVFileReader = (function(){
 	function parseA(docData){
 		var parsedItems = [];
 		for (i=docData.firstLineWithMaxItems+1;i<docData.lines.length-1;i++){
-			console.log("on line",i);
+			//console.log("on line",i);
 
 
 			var thisLine = docData.lines[i].split(",");
 			var thisItem = {};
 			var d = thisLine[docData.dateIndex].split("/");
-
+			thisLine[docData.descIndex] = thisLine[docData.descIndex].replace(replace_string,"");
 			thisItem.desc = thisLine[docData.descIndex].substring(0,31);
-			thisItem.amt = thisLine[docData.amountIndex].replace("-","");
+			var re = /-/
+            var match = re.test(thisLine[docData.amountIndex]);
+
+            if (match) {
+            	thisItem.amt = thisLine[docData.amountIndex].replace("-","");
+            	thisItem.cat = "uncategorized";
+            } else {
+            	thisItem.cat = "payday";
+            }
+			
 			thisItem.month = d[0];
 			thisItem.day = d[1];
 			thisItem.year = d[2];
@@ -80,20 +90,22 @@ var CSVFileReader = (function(){
 	function parseDC(docData){
 		var parsedItems = [];
 		for (i=docData.firstLineWithMaxItems+1;i<docData.lines.length-1;i++){
-			console.log("on line",i);
+			//console.log("on line",i);
 
 
 			var thisLine = docData.lines[i].split(",");
 			var thisItem = {};
 			var d = thisLine[docData.dateIndex].split("/");
-
+			thisLine[docData.descIndex] = thisLine[docData.descIndex].replace(replace_string,"");
 			thisItem.desc = thisLine[docData.descIndex].substring(0,31);
 			if (thisLine[docData.debitIndex].length > 1){
 				thisItem.amt = thisLine[docData.debitIndex].replace("-","");
+				thisItem.cat = "uncategorized";
 			} else if (thisLine[docData.creditIndex].length > 1){
 				thisItem.amt = thisLine[docData.creditIndex].replace("-","");
+				thisItem.cat = "payday";
 			} else {
-				console.log("skipping item",thisLine);
+				//console.log("skipping item",thisLine);
 			}
 			thisItem.month = d[0];
 			thisItem.day = d[1];
@@ -103,21 +115,48 @@ var CSVFileReader = (function(){
 		}
 		return parsedItems;
 	}
+	function addToViewModel(parsed){
+		//console.log(parsed);
+		var i = 0;
+			// look for duplicate items in viewmodel
+
+		function add(){
+
+			var progress = Math.floor((i/(parsed.length-1))*100);
+            tinybudget.viewmodel.csvLoadBarProgress(progress);
+
+			//console.log(progress);
+			var gluedDate = parsed[i].month +"/"+ parsed[i].day +"/"+ parsed[i].year;
+			var row = new rowitem(false,parsed[i].desc,parsed[i].amt,gluedDate,parsed[i].cat,null,null,null);
+			tinybudget.viewmodel.userItems.push(row);
+			
+
+			if (i >= parsed.length-1){
+				return;
+			} else {
+				i++;
+				setTimeout(add,200);
+			}
+		}
+
+		add();
+
+	}
 	return {
 		main: function(){
 			if (window.File && window.FileReader && window.FileList && window.Blob) {
-			  console.log("Great success! All the File APIs are supported.");
+			  tinybudget.viewmodel.canCSV = ko.observable(false);
 
 			  $("#CSVinput").change(function(evt){
 			  		var file = evt.target.files;
 
-			  		console.log(file);
+			  		//console.log(file);
 
 			  		if (file.length > 1){
-			  			console.log("more than one file selected. Quiting process");
+			  			//console.log("more than one file selected. Quiting process");
 			  			return;
 			  		} else if (file[0].type != "text/csv") {
-			  			console.log("Not a csv file. Quiting process");
+			  			//console.log("Not a csv file. Quiting process");
 			  			return
 			  		} else {
 			  			var reader = new FileReader();
@@ -125,27 +164,13 @@ var CSVFileReader = (function(){
 			  			reader.onload = (function(theFile){
 			  				return function(e) {
 			  					var parsed = parseCSV(e.target.result);
-			  					console.log(parsed);
-
-			  						// look for duplicate items in viewmodel
-
-			  					/*tinybudget.viewmodel.userItems.push(new rowitem(true, 
-			  						datai.items[count].desc, 
-			  						datai.items[count].amt, 
-			  						datai.items[count].year + "/" + datai.items[count].month + "/" + datai.items[count].day, 
-			  						datai.items[count].cat, 
-			  						datai.items[count].itemid, 
-			  						(datai.items[count].isflagged=="true"), 
-			  						datai.items[count].comment));*/
-			  				}
+			  					addToViewModel(parsed);
+			  				}	
 			  			})(file[0]);
 
 			  			reader.readAsText(file[0]);
 			  		}
 			  });
-			} else {
-			  alert('The File APIs are not fully supported in this browser.');
-			}
 		}
 	}
 })();
