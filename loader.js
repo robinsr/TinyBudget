@@ -31,8 +31,7 @@ head.js(
     "CSVparser.js",
     
     function(){
-        console.log('all done');   
-        
+       
 
         ko.applyBindings(tinybudget.viewmodel);
         document.forms.signin_form.uname.focus();
