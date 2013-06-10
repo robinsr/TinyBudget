@@ -27,7 +27,7 @@ is_ie = true;
             <p class="nav navbar-text" data-bind="visible: loadstatus() >= 2" style="display:none;">Logged in as <span data-bind="text: username()"></span></p>
               <p class="nav navbar-text" data-bind="visible: loadstatus() >= 2" style="display:none;"><a href="#" data-bind="click:function(){editAccount()}">edit</a></p>
               <form class="navbar-form pull-right in_nav" data-bind="visible: loadstatus() >= 2" style="display:none;">
-                <button type="button" class="btn" data-bind="click: function(){startCSV()}">Upload CSV File</button>
+                <input type="button" class="btn" data-bind="click: function(){startCSV()},enable:canCSV" value="Upload CSV File" />
                 <button type="button" class="btn" data-bind="click: function(){editCategories()}" id="tour_categories">Edit Categories</button>
                 <button type="button" class="btn" data-bind="click: function(){logout()}">Logout</button>
               </form>
@@ -476,11 +476,11 @@ is_ie = true;
         <h4>Edit Item</small></h4>
         <p class="muted" data-bind="text:editableItem().itemid"></p>
       </div>
-      <div class="modal-body">
-            <form class="form-horizontal" data-bind="submit:function(){updateItem();},with:editableItem()">
+      <div class="modal-body" data-bind="foreach:editableItemFilter">
+            <form class="form-horizontal" data-bind="submit:$root.updateItem">
                 <div class="control-group">
                     <label class="control-label">Date:</label>
-                    <div class="controls"><input type="text" data-bind="value:editDate"></div>
+                    <div class="controls"><input type="text" data-bind="value:editableDate"></div>
                 </div>
                 <div class="control-group">
                     <label class="control-label">Description:</label>
@@ -491,30 +491,20 @@ is_ie = true;
                     <div class="controls">
                         <p class="help-block" data-bind="visible: cat == 'payday'">This Item is a PayDay</p>
                         <select data-bind="disable: cat == 'payday',options:$root.userCategories,value:cat"></select>
-                      
-                        
-                      
                     </div>
                 </div>
                 <div class="control-group">
                     <label class="control-label">Amount:</label>
                     <div class="controls"><input type="text" data-bind="value:amt"></div>
                 </div>
-                <div class="control-group">
-                    <label class="control-label">Comment:</label>
-                    <div class="controls"><textarea data-bind="value:comment()"></textarea></div>
-                </div>
-                <div class="control-group">
-                    <label class="control-label">Flag:</label>
-                    <div class="controls"><input type="checkbox" data-bind="checked:isflagged()"></div>
-                </div>
                 <div class="controls">
                         <button type="submit" class="btn btn-primary">Save</button>
                     </div>
             </form>
+           
       </div>
       <div class="modal-footer">
-        <button class="btn btn-primary" type="button" data-bind="click: function(){modalClose()}">Okay</button>
+        <button class="btn btn-primary" type="button" data-bind="click: function(){modalClose()}">Cancel</button>
       </div>
     </div>
 
@@ -525,10 +515,25 @@ is_ie = true;
         <h4>CSV Upload</h4>
       </div>
       <div class="modal-body">
+        <p>A <strong>CSV</strong> file containing <em>comma-separated values</em> can usually be obtained through your online bank account. This file contains a plain text version of your bank statement including debits and credits to your account, dates of those transactions, and a description of the transaction. Uploading a CSV file will make using TinyBudget much easier as you don&#39;t have to manually add items. You still will have to categorize the items that TinyBudget is able to get from the CSV file.</p>
+         <p>A CSV file may also contain information such as account numbers which TinyBudget will ignore. Still, you can edit a CSV with Notepad or TextEdit file before uploading it to TinyBudget to remove this type of information.</p>
+         <p>Note: TinyBudget <strong>does not</strong> upload CSVs to a server for processing or storage; processing happens inside the web browser and the file is not stored anywhere. The process essentially fills out the form you would otherwise be filling out manually, only much, much faster.</p>
         <input type="file" id="CSVinput" name="files[]" />
+        <div data-bind="visible: csvLoadBarProgress() != 0" style="display:none;">
+            <div class="csvProgress span4">
+                <div class="progress progress-striped active" data-bind="css: { 'progress-success': csvLoadBarProgress() > 98 }">
+                  <div class="bar" id="prgbartest" style="width:0%" data-bind="attr: { style: $root.csvloadBarWidth }">
+                    <div data-bind="visible: csvLoadBarProgress() > 98" style="display:none;">
+                        <p>Processing Complete</p>
+                    </div>
+                  </div>
+                </div>
+            </div>
+        </div>
+        
       </div>
       <div class="modal-footer">
-        <button class="btn btn-primary" type="button" data-bind="click: function(){modalClose()}">Okay</button>
+        <button class="btn btn-primary" type="button" data-bind="click: function(){doneWithCSV()}">Okay</button>
       </div>
     </div>
 
