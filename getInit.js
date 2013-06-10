@@ -41,7 +41,7 @@ var getInit = (function(){
                             //console.log(count,datai.items.length - 2);
                             var progress = Math.floor((count/datai.items.length)*100);
                             if (progress % 10 == 0){
-                                tinybudget.viewmodel.loadBarProgress(progress);
+                                tinybudget.viewmodel.getInitLoadBarProgress(progress);
                             }
                             tinybudget.viewmodel.userItems.push(new rowitem(true, datai.items[count].desc, datai.items[count].amt, datai.items[count].year + "/" + datai.items[count].month + "/" + datai.items[count].day, datai.items[count].cat, datai.items[count].itemid, (datai.items[count].isflagged=="true"), datai.items[count].comment));
                             
