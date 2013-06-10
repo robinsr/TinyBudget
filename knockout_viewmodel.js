@@ -54,7 +54,8 @@ function AppViewModel() {
     self.oldPass = ko.observable("");
     self.newPass = ko.observable("");
     self.changeEmailError = ko.observableArray([]);
-    self.loadBarProgress = ko.observable(0);
+    self.getInitLoadBarProgress = ko.observable(0);
+    self.csvLoadBarProgress = ko.observable(0);
     self.uname = ko.observable('');
     self.upass = ko.observable('');
     self.signup_uname = ko.observable("");
@@ -62,12 +63,12 @@ function AppViewModel() {
     self.signup_email = ko.observable("");
     self.modalStatus = ko.observable("");
     self.onTour = ko.observable(0);// 0 not onTour; 1 User Tour; 2 Tech Tour    
-    self.update_date = ko.observable();
-    self.update_desc = ko.observable();
-    self.update_cat = ko.observable();
-    self.update_amt = ko.observable();
-    self.update_comment = ko.observable();
-    self.update_flag = ko.observable();
+    self.editableItem = ko.observable();
+    self.canCSV = ko.observable(false);
+
+    if (window.File && window.FileReader && window.FileList && window.Blob) {
+        self.canCSV(true);
+    }
     
     self.loadedMonths.subscribe(function(array){
         //console.log('added to loaded months '+array[array.length-1]);
@@ -322,7 +323,31 @@ function AppViewModel() {
         }
     }
 
+    self.editableItemFilter = ko.computed(function(){
+        return ko.utils.arrayFilter(self.userItems(), function (r) {
+            return self.editableItem() == r.itemid
+        });
+    })
 
+    self.loadItemForEdit = function(item,event){
+        if (self.modalStatus() == ''){
+            //console.log('setting editableItem to ',item.itemid);
+            self.editableItem(item.itemid);
+            self.modalStatus('edit');
+        }
+    }
+
+    self.updateItem = function(){
+        var newItem = self.editableItemFilter()[0];
+        self.userItems.remove(self.editableItemFilter()[0]);
+
+
+        var flg = (newItem.isflagged() == true);
+
+        var newObject = new rowitem(false,newItem.desc,newItem.amt,newItem.editableDate(),newItem.cat,newItem.itemid,flg,newItem.comment());
+        //console.log(newObject);
+        self.userItems.push(newObject);
+    }
 
         // an array that replicates userItems except if filters out all the items that are not
         // in the month that the user is viewing
@@ -635,8 +660,12 @@ function AppViewModel() {
     }
     
     self.loadBarWidth =  ko.computed (function()    {
-        //console.log('running '+self.loadBarProgress());
-        return "width: " + self.loadBarProgress()  + "%";
+        //console.log('running '+self.getInitLoadBarProgress());
+        return "width: " + self.getInitLoadBarProgress()  + "%";
+    });
+    self.csvloadBarWidth =  ko.computed (function()    {
+        //console.log('running '+self.getInitLoadBarProgress());
+        return "width: " + self.csvLoadBarProgress()  + "%";
     });
 
     
@@ -729,6 +758,10 @@ function AppViewModel() {
     }
     self.startCSV = function(){
         self.modalStatus("csv");
+    }
+    self.doneWithCSV = function(){
+        self.modalClose();
+        self.csvLoadBarProgress(0);
     }
 
     // ===========   Application Tours   ===========  
