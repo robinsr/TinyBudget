@@ -65,6 +65,10 @@ function rowitem(loadedFromServer, desc, amt, date, cat, itemid, flag, comment) 
     self.formattedDate = ko.computed(function () {
         return dateFormat(Date.parse(self.date), 'mmm d, yyyy');
     });
+    self.editableDateFormat = ko.computed(function(){
+        return self.month() +"/" + self.day() + "/" + self.year();
+    });
+    self.editableDate = ko.observable(self.editableDateFormat());
     
     self.isflagged = ko.observable();
     flag ? self.isflagged(true): self.isflagged(false);
