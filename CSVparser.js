@@ -170,7 +170,9 @@ var CSVFileReader = (function(){
 
 			  			reader.readAsText(file[0]);
 			  		}
+			  		
 			  });
+			}
 		}
 	}
 })();
