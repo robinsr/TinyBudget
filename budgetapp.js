@@ -723,6 +723,7 @@ function handler(req, res) {
 
             // dev server only, remove for production
             req.url = req.url.replace('/TinyBudget', '');
+            req.url = req.url.replace('/dev', '');
 
 
             var q = qs.parse(nodeurl.parse(req.url).query);
