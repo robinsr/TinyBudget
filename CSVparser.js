@@ -148,15 +148,16 @@ var CSVFileReader = (function(){
 
 			  $("#CSVinput").change(function(evt){
 			  		var file = evt.target.files;
-
-			  		//console.log(file);
+                      
+                    var re = /.*\.csv/
+                    var match = re.test(file[0].name);
 
 			  		if (file.length > 1){
 			  			//console.log("more than one file selected. Quiting process");
 			  			return;
-			  		} else if (file[0].type != "text/csv") {
-			  			//console.log("Not a csv file. Quiting process");
-			  			return
+			  		} else if (!match) {
+		  			    //console.log("Not a csv file. Quiting process");
+		  			    return
 			  		} else {
 			  			var reader = new FileReader();
 
