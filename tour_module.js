@@ -2,7 +2,7 @@ var tech_tour = (function(){
 
     return {
         init: function(){  
-            console.log('tech tour called');
+            //console.log('tech tour called');
             
     		var tour = new Tour({
                 name: Math.random() * 1000000,
@@ -77,7 +77,7 @@ var user_tour = (function(){
 
     return {
         init: function(){  
-            console.log('user tour called');
+            //console.log('user tour called');
             
             var tour = new Tour({
                 name: Math.random() * 1000000,
