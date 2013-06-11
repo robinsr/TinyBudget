@@ -347,6 +347,7 @@ function AppViewModel() {
         var newObject = new rowitem(false,newItem.desc,newItem.amt,newItem.editableDate(),newItem.cat,newItem.itemid,flg,newItem.comment());
         //console.log(newObject);
         self.userItems.push(newObject);
+        self.modalStatus('');
     }
 
         // an array that replicates userItems except if filters out all the items that are not
