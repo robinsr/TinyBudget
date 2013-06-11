@@ -145,7 +145,6 @@ var CSVFileReader = (function(){
 	return {
 		main: function(){
 			if (window.File && window.FileReader && window.FileList && window.Blob) {
-			  tinybudget.viewmodel.canCSV = ko.observable(false);
 
 			  $("#CSVinput").change(function(evt){
 			  		var file = evt.target.files;
@@ -170,7 +169,7 @@ var CSVFileReader = (function(){
 
 			  			reader.readAsText(file[0]);
 			  		}
-			  		
+
 			  });
 			}
 		}
