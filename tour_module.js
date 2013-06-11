@@ -19,6 +19,13 @@ var tech_tour = (function(){
                 backdrop: true    
             });
             tour.addStep({
+                element: "#tour_csvbutton",
+                title: "HTML5 FileReader",
+                content: "Alternatively, a user can 'upload' a CSV file of their bank statement. A script parses the CSV file and adds the items to the model. The file is not uploaded but read by the browser using the HTML5 FileReader API",
+                placement: 'bottom',
+                backdrop: true    
+            });
+            tour.addStep({
                 element: "#tour_breakdown_table",
                 title: "Breakdown &amp; Category Highlight",
                 content: "This section contains two tables. Through data bindings one of them is always hidden. When a user clicks a pie slice, a knockout computed array is given the value to filter by and returns an array of items in that category, bringing up the Category Highlight table. Clicking again sets the filter value to null, hiding the Category Highlight table",
