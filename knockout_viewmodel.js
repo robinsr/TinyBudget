@@ -674,6 +674,10 @@ function AppViewModel() {
     self.login = function (newuser_name, newuser_pass) {
         newuser_name ? self.user.name = newuser_name : self.user.name = self.uname();
         newuser_pass ? self.user.pass = newuser_pass : self.user.pass = self.upass();
+        if (self.user.name == '' || self.user.pass == ''){
+            self.user.name = $("#uname").value;
+            self.user.pass = $("#pass").value;
+        }
         tinybudgetutils.issue('login', [
             ['name', self.user.name],
             ['pass', self.user.pass]
