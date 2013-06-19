@@ -144,41 +144,47 @@ function AppViewModel() {
             self.input_error("");
                 // 32 character limit
             if (self.desc().length <= 32) {
-                if (self.amt().length > 0) {
-                    if (self.amt().length <= 8) {
-                        // remove all non digits
-                        var re = /^-?\$?[0-9]*\.?([0-9]{2})?$/
-                        var match = re.test(self.amt())
-                        //console.log('tested and ' + match)
-                        if (match) {
-                                // the input should parse to a decimal, otherwise dont add it
-                            var parsed_input = parseFloat(self.amt()).toFixed(2);
-                            if (!isNaN(parsed_input)) {
-                                self.input_error("");
-                                // a correct date is MM/DD/YYYY. split at '/' to get 3 member array
-                                //console.log(self.input_date());
-                                var date = self.input_date().split("/");
-                                // check to see if there are 3 members
-                                if ((date[0] && date[1] && date[2])) {
-                                    for (var i = 0; i < date.length; i++) {
-                                        date[i] = parseInt(date[i]);
-                                        //console.log('parsing ' + date[i])
-                                    };
-                                        // check is day, month, and year are acceptable
-                                    if ((0 < date[0]) && (date[0] < 13) && (!isNaN(date[0]))) {
-                                        if ((0 < date[1]) && (date[1] < 32) && (!isNaN(date[1]))) {
-                                            if ((2011 < date[2]) && (date[2] < 2015) && (!isNaN(date[2]))) {
-                                                self.input_error("");
-                                                var cat = self.expenseOrPaydayActive() == 'payday' ? 'payday' : self.cat();
-                                                self.userItems.push(new rowitem(false, self.desc(), parsed_input, self.input_date(), cat));
-                                                self.desc("");
-                                                self.amt("");
-                                                self.input_date("");
-                                                document.forms.input_form.desc.focus();
-                                                self.inputFeedback('Item Added Successfully')
-                                                setTimeout(function () {
-                                                    self.inputFeedback('');
-                                                }, 5000);
+                var amp = tinybudgetutils.validate('desc',self.desc())
+                console.log(amp);
+                if (!amp){
+                    if (self.amt().length > 0) {
+                        if (self.amt().length <= 8) {
+                            // remove all non digits
+                            var re = /^-?\$?[0-9]*\.?([0-9]{2})?$/
+                            var match = re.test(self.amt())
+                            //console.log('tested and ' + match)
+                            if (match) {
+                                    // the input should parse to a decimal, otherwise dont add it
+                                var parsed_input = parseFloat(self.amt()).toFixed(2);
+                                if (!isNaN(parsed_input)) {
+                                    self.input_error("");
+                                    // a correct date is MM/DD/YYYY. split at '/' to get 3 member array
+                                    //console.log(self.input_date());
+                                    var date = self.input_date().split("/");
+                                    // check to see if there are 3 members
+                                    if ((date[0] && date[1] && date[2])) {
+                                        for (var i = 0; i < date.length; i++) {
+                                            date[i] = parseInt(date[i]);
+                                            //console.log('parsing ' + date[i])
+                                        };
+                                            // check is day, month, and year are acceptable
+                                        if ((0 < date[0]) && (date[0] < 13) && (!isNaN(date[0]))) {
+                                            if ((0 < date[1]) && (date[1] < 32) && (!isNaN(date[1]))) {
+                                                if ((2011 < date[2]) && (date[2] < 2015) && (!isNaN(date[2]))) {
+                                                    self.input_error("");
+                                                    var cat = self.expenseOrPaydayActive() == 'payday' ? 'payday' : self.cat();
+                                                    self.userItems.push(new rowitem(false, self.desc(), parsed_input, self.input_date(), cat));
+                                                    self.desc("");
+                                                    self.amt("");
+                                                    self.input_date("");
+                                                    document.forms.input_form.desc.focus();
+                                                    self.inputFeedback('Item Added Successfully')
+                                                    setTimeout(function () {
+                                                        self.inputFeedback('');
+                                                    }, 5000);
+                                                } else {
+                                                    self.validateFail('date')
+                                                }
                                             } else {
                                                 self.validateFail('date')
                                             }
@@ -189,19 +195,19 @@ function AppViewModel() {
                                         self.validateFail('date')
                                     }
                                 } else {
-                                    self.validateFail('date')
+                                    self.validateFail('amt')
                                 }
                             } else {
                                 self.validateFail('amt')
                             }
                         } else {
-                            self.validateFail('amt')
+                            self.validateFail('amt_long')
                         }
                     } else {
-                        self.validateFail('amt_long')
+                        self.validateFail('amt')
                     }
                 } else {
-                    self.validateFail('amt')
+                    self.validateFail('desc_amp')
                 }
             } else {
                 self.validateFail('desc_long')
@@ -219,6 +225,7 @@ function AppViewModel() {
         switch (type){
             case 'desc':
             case 'desc_long':
+            case 'desc_amp':
                 self.input_error("desc");
                 break;
             case 'amt':
@@ -230,6 +237,7 @@ function AppViewModel() {
                 break;      
         }
         var message = {
+            'desc_amp': 'Descriptions cannot have ampersands (&)',
             'desc': 'Your item needs a description',
             'amt': 'Enter valid dollar amount like 12.34. No need for a "$"',
             'desc_long': 'Descriptions limited to 32 characters',
@@ -247,8 +255,20 @@ function AppViewModel() {
         // subscries to changes in userItems array. Uses a custom function to detect whether an item
         // was added or removed from the array and then provices an add and remove callback
     self.userItems.subscribeArrayChanged(
-        function(item){server.addItemToServer(item)}, 
-        function(item){server.removeItemFromServer(item)}
+        function(item){server.addItemToServer(item)
+        //     try{
+        //         var t = server.addItemToServer(item)
+        //     } catch (ex){
+        //         console.log(ex.name,ex.message);
+        //     }
+        },
+        function(item){server.removeItemFromServer(item)
+            // try{
+            //     server.removeItemFromServer(item)
+            // } catch (ex){
+            //     console.log(ex.name,ex.message);
+            // }
+        } 
     );
     
         // changes the table row CSS class based on a boolean value associated with the item
