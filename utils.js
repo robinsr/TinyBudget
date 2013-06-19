@@ -43,6 +43,10 @@ var tinybudgetutils = (function(){
 		validate:function(type,input) {
 		    var error;
 		    if (type == 'desc'){
+		    	console.log('validating');
+
+		    	var pat = /.*\&/
+				var m1 = pat.test(input);
 
 		        if (input.length == 0){
 		            error = "too short";
@@ -50,7 +54,12 @@ var tinybudgetutils = (function(){
 		        } else if (input.length > 32){
 		            error = "too long";
 		            return error;
+		        } else if (m1){
+		        	console.log(m1);
+	        		error = 'Ampersand';
+	        		return error;
 		        } else {
+		        	console.log('nothing wrong with desc');
 		            return null
 		        }
 
@@ -64,9 +73,9 @@ var tinybudgetutils = (function(){
 		            return error;
 		        } else {
 		            var re = /^-?\$?[0-9]*\.?([0-9]{2})?$/
-		            var match = re.test(input)
-		            //console.log('tested and ' + match)
-		            if (!match) {
+		            var m2 = re.test(input)
+		            //console.log('tested and ' + m2)
+		            if (!m2) {
 		                error = "invalid amount format";
 		                return error;
 		            } else {
