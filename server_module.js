@@ -47,7 +47,7 @@ var server = (function(){
                         ], null, function (err, stat, text) {
                             if (stat == 400){
                                 tinybudget.viewmodel.expiredSession();
-                            } else if (stat == 500){
+                            } else if (stat == 500 || stat == 502){
                                 tinybudget.viewmodel.serverError();
                             } else {
                                 return;
@@ -72,7 +72,7 @@ var server = (function(){
                     ], null, function (err, stat, text) {
                         if (stat == 400){
                             tinybudget.viewmodel.expiredSession();
-                        } else if (stat == 500){
+                        } else if (stat == 500 || stat == 502){
                             tinybudget.viewmodel.serverError();
                         } else {
                             return;
@@ -92,7 +92,7 @@ var server = (function(){
                 ], null, function (err, stat, text) {
                     if (stat == 400){
                         tinybudget.viewmodel.expiredSession();
-                    } else if (stat == 500){
+                    } else if (stat == 500 || stat == 502){
                         tinybudget.viewmodel.serverError();
                     } else {
                         return;
@@ -109,7 +109,7 @@ var server = (function(){
                 ], null, function (err, stat, text) {
                     if (stat == 400){
                         tinybudget.viewmodel.expiredSession();
-                    } else if (stat == 500){
+                    } else if (stat == 500 || stat == 502){
                         tinybudget.viewmodel.serverError();
                     } else {
                         return;
