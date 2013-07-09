@@ -680,6 +680,13 @@ function AppViewModel() {
         });
     }
     
+    self.expiredSession = function(){
+        self.modalStatus("sessionLogin");
+    }
+    self.serverError = function(){
+        self.modalStatus("serverError");
+    }
+    
     self.loadBarWidth =  ko.computed (function()    {
         //console.log('running '+self.getInitLoadBarProgress());
         return "width: " + self.getInitLoadBarProgress()  + "%";
