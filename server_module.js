@@ -45,7 +45,13 @@ var server = (function(){
                             ['isflagged', item.isflagged()],
                             ['comment', item.comment()]
                         ], null, function (err, stat, text) {
-                            //console.log(err, stat, text)
+                            if (stat == 400){
+                                tinybudget.viewmodel.expiredSession();
+                            } else if (stat == 500){
+                                tinybudget.viewmodel.serverError();
+                            } else {
+                                return;
+                            }
                         });
                     }
                 }
@@ -64,7 +70,13 @@ var server = (function(){
                         ['year', item.year()],
                         ['itemid', item.itemid]
                     ], null, function (err, stat, text) {
-                        //console.log(err, stat, text)
+                        if (stat == 400){
+                            tinybudget.viewmodel.expiredSession();
+                        } else if (stat == 500){
+                            tinybudget.viewmodel.serverError();
+                        } else {
+                            return;
+                        }
                     });
                 }
             } else {
@@ -78,7 +90,13 @@ var server = (function(){
                     ['sess', tinybudget.viewmodel.user.sess],
                     ['cat', item]
                 ], null, function (err, stat, text) {
-                    //console.log(err, stat, text)
+                    if (stat == 400){
+                        tinybudget.viewmodel.expiredSession();
+                    } else if (stat == 500){
+                        tinybudget.viewmodel.serverError();
+                    } else {
+                        return;
+                    }
                 });
             }
         },
@@ -89,7 +107,13 @@ var server = (function(){
                     ['sess', tinybudget.viewmodel.user.sess],
                     ['cat', item]
                 ], null, function (err, stat, text) {
-                    //console.log(err, stat, text)
+                    if (stat == 400){
+                        tinybudget.viewmodel.expiredSession();
+                    } else if (stat == 500){
+                        tinybudget.viewmodel.serverError();
+                    } else {
+                        return;
+                    }
                 });
             }
         }
