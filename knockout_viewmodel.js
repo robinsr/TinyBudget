@@ -57,6 +57,9 @@ function AppViewModel() {
     self.getInitLoadBarProgress = ko.observable(0);
     self.csvLoadBarProgress = ko.observable(0);
     self.uname = ko.observable('');
+    self.relogin_uname = ko.observable('');
+    self.relogin_pass = ko.observable('');
+    self.relogin_error = ko.observable('');
     self.upass = ko.observable('');
     self.signup_uname = ko.observable("");
     self.signup_pass = ko.observable("");
@@ -698,7 +701,7 @@ function AppViewModel() {
 
     
     // login function, loads user items and categories from server and pushes to obversvable arrays    
-    self.login = function (newuser_name, newuser_pass) {
+    self.login = function (newuser_name, newuser_pass,cb) {
         newuser_name ? self.user.name = newuser_name : self.user.name = self.uname();
         newuser_pass ? self.user.pass = newuser_pass : self.user.pass = self.upass();
         if (self.user.name == '' || self.user.pass == ''){
@@ -712,9 +715,11 @@ function AppViewModel() {
             if (err) {
                 //console.log('error logining in')
             } else {
-                if (stat == 400) {
+                if (stat == 400 && cb == null) {
                     //console.log('animating')
                     $("#signin_form").shake();
+                } else if (stat == 400 && cb != null){
+                    cb('error');    
                 } else if (stat == 200) {
                     data = JSON.parse(data)
                     $("#uname").val('');
@@ -728,6 +733,13 @@ function AppViewModel() {
                 }
             }
         });
+    }
+    self.relogin = function(){
+        self.login(self.relogin_uname(),self.relogin_pass(),function(code){
+            if (code){
+                self.relogin_error('Invalid Username or Password');
+            }
+        })
     }
         // destroys session and clears form fields and models 
     self.logout = function () {
