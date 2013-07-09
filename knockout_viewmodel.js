@@ -730,6 +730,8 @@ function AppViewModel() {
                     self.userEmail(self.user.email);
                     getInit.main();
                     self.username(self.user.name);
+                } else {
+                    self.modalStatus("serverError");
                 }
             }
         });
