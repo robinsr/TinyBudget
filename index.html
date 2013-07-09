@@ -546,6 +546,7 @@ is_ie = true;
         <p class="muted">Please login again</p>
       </div>
       <div class="modal-body">
+        <span data-bind="text: relogin_error()" class="categoryFeedback"></span>
             <form class="form-horizontal" data-bind="submit:relogin">
                 <div class="control-group">
                     <label class="control-label">Username</label>
