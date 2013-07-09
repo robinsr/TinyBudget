@@ -473,7 +473,7 @@ is_ie = true;
     <div id="item_modal" class="modal hide fade in" data-bind="css:{hide: modalStatus() != 'edit'}">
       <div class="modal-header">
       <button type="button" class="close" data-bind="click: function(){modalClose()}" aria-hidden="true">&times;</button>
-        <h4>Edit Item</small></h4>
+        <h4>Edit Item</h4>
         <p class="muted" data-bind="text:editableItem().itemid"></p>
       </div>
       <div class="modal-body" data-bind="foreach:editableItemFilter">
@@ -536,8 +536,50 @@ is_ie = true;
         <button class="btn btn-primary" type="button" data-bind="click: function(){doneWithCSV()}">Okay</button>
       </div>
     </div>
+    
+    <!-- =================  Expired Session Modal ============ -->
+    
+    <div id="expired_session_modal" class="modal hide fade in" data-bind="css:{hide: modalStatus() != 'sessionLogin'}">
+      <div class="modal-header">
+      <button type="button" class="close" data-bind="click: function(){modalClose()}" aria-hidden="true">&times;</button>
+        <h4>Your Session Expired</small></h4>
+        <p class="muted">Please login again</p>
+      </div>
+      <div class="modal-body">
+            <form class="form-horizontal" data-bind="submit:relogin">
+                <div class="control-group">
+                    <label class="control-label">Username</label>
+                    <div class="controls"><input type="text" data-bind="value:relogin_uname"></div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Password</label>
+                    <div class="controls"><input type="text" data-bind="value:relogin_pass"></div>
+                </div>
+                <div class="controls">
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
+            </form>
+           
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" type="button" data-bind="click: function(){logout()}">Close</button>
+      </div>
+    </div>
+    
+    <!-- =================  Server Error Modal =============== -->
 
-
+    <div id="server_error_modal" class="modal hide fade in" data-bind="css:{hide: modalStatus() != 'serverError'}">
+      <div class="modal-header">
+      <button type="button" class="close" data-bind="click: function(){logout()}" aria-hidden="true">&times;</button>
+        <h4>Server error...</small></h4>
+      </div>
+      <div class="modal-body">
+          <p class="muted">Looks like we&#39;re having server problems. Please try again later./p> 
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" type="button" data-bind="click: function(){logout()}">Close</button>
+      </div>
+    </div>
 
     <div id="push"></div>
 
