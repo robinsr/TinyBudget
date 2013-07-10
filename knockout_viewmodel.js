@@ -725,6 +725,8 @@ function AppViewModel() {
                     $("#uname").val('');
                     $("#pass").val('');
                     self.loadstatus(1);
+                    self.uname('');
+                    self.upass('');
                     self.user.sess = data.sessionid;
                     self.user.email = data.email
                     self.userEmail(self.user.email);
