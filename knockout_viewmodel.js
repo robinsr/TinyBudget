@@ -572,15 +572,10 @@ function AppViewModel() {
 
         // function to check if category exists
     self.checkCategory = function(catToCheck){
-        var match = ko.utils.arrayFirst(self.userCategories(), function(userCategory){
+        return = ko.utils.arrayFirst(self.userCategories(), function(userCategory){
             return catToCheck.toLowerCase() == userCategory.toLowerCase();
         });
-        console.log(match);
-        if (match){
-            return match;
-        } else {
-            return "uncategorized";
-        }
+        return "uncategorized";
     }
 
 
