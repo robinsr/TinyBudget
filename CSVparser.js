@@ -46,16 +46,16 @@ var CSVFileReader = (function(){
 			docData.ignoreLine.push(0);
 		}
 
-		//console.log(docData);
+		console.log(docData);
 
 		if (docData.amountIndex == null && (docData.debitIndex != null && docData.creditIndex != null)){
-			//console.log('parse using debit/credit');
+			console.log('parse using debit/credit');
 			return parseDebitCredit(docData);
 		} else if (docData.amountIndex != null && (docData.debitIndex == null && docData.creditIndex == null)){
-			//console.log('parse using amount');
+			console.log('parse using amount');
 			return parseAmount(docData);
 		} else {
-			//console.log('send error');
+			console.log('send error');
 		}
 
 		
@@ -65,7 +65,7 @@ var CSVFileReader = (function(){
 	function parseAmount(docData){
 		var parsedItems = [];
 		for (i=docData.firstLineWithMaxItems+1;i<docData.lines.length-1;i++){
-			//console.log("on line",i);
+			console.log("on line",i);
 
 
 			var thisLine = docData.lines[i].split(",");
