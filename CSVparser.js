@@ -89,6 +89,7 @@ var CSVFileReader = (function(){
       thisItem.month = d[0];
       thisItem.day = d[1];
       thisItem.year = d[2];
+      thisItem.itemId = CryptoJS.MD5(Math.random().toString());
 
       parsedItems.push(thisItem);
     }
@@ -127,6 +128,7 @@ var CSVFileReader = (function(){
         thisItem.month = d[0];
         thisItem.day = d[1];
         thisItem.year = d[2];
+        thisItem.itemId = CryptoJS.MD5(Math.random().toString());
 
         parsedItems.push(thisItem);
       }
@@ -145,7 +147,7 @@ var CSVFileReader = (function(){
 
       //console.log(progress);
       var gluedDate = parsed[i].month +"/"+ parsed[i].day +"/"+ parsed[i].year;
-      var row = new rowitem(false,parsed[i].desc,parsed[i].amt,gluedDate,parsed[i].cat,null,null,null);
+      var row = new rowitem(false,parsed[i].desc,parsed[i].amt,gluedDate,parsed[i].cat,parsed[i].itemId,null,null);
       tinybudget.viewmodel.userItems.push(row);
       
 
