@@ -179,7 +179,9 @@ var CSVFileReader = (function(){
             reader.onload = (function(theFile){
               return function(e) {
                 var parsed = parseCSV(e.target.result);
+                tinybudget.viewmodel.sorting = true;
                 addToViewModel(parsed);
+                tinybudget.viewmodel.sorting = false;
               }   
             })(file[0]);
 
