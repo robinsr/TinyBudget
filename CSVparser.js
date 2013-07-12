@@ -82,8 +82,12 @@ var CSVFileReader = (function(){
             	thisItem.cat = "payday";
             }
 
-            if (docData.descIndex != null && thisItem.cat != "payday"){
+            var checkCat = tinybudget.viewmodel.checkCategory;
+
+			if (docData.descIndex != null && thisItem.cat != "payday" && checkCat){
             	thisItem.cat = thisLine[docData.catIndex]
+            } else if (checkCat == null){
+            	console.log("category "+thisLine[docData.catIndex]+" is not an okay category");
             }
 			
 			thisItem.month = d[0];
@@ -116,10 +120,14 @@ var CSVFileReader = (function(){
 				//console.log("skipping item",thisLine);
 			}
 
-			if (docData.descIndex != null && thisItem.cat != "payday"){
+			var checkCat = tinybudget.viewmodel.checkCategory;
+
+			if (docData.descIndex != null && thisItem.cat != "payday" && checkCat){
             	thisItem.cat = thisLine[docData.catIndex]
+            } else if (checkCat == null){
+            	console.log("category "+thisLine[docData.catIndex]+" is not an okay category");
             }
-            
+
 			thisItem.month = d[0];
 			thisItem.day = d[1];
 			thisItem.year = d[2];

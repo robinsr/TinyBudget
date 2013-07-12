@@ -570,6 +570,18 @@ function AppViewModel() {
         };
     });
 
+        // function to check if category exists
+    self.checkCategory = function(catToCheck){
+        var match = ko.utils.arrayFirst(self.userCategories(), function(userCategory){
+            return catToCheck.toLowerCase() == userCategory.toLowerCase();
+        });
+        if (match){
+            return true;
+        } else {
+            return null;
+        }
+    }
+
 
         // holds the array of items that match the name of the category in categoryHighlight
     self.categoryHighlightFilter = ko.computed(function(){
