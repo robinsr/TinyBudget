@@ -79,6 +79,7 @@ var CSVFileReader = (function(){
             	thisItem.amt = thisLine[docData.amountIndex].replace("-","");
             	thisItem.cat = "uncategorized";
             } else {
+            	thisItem.amt = thisLine[docData.amountIndex];
             	thisItem.cat = "payday";
             }
 
