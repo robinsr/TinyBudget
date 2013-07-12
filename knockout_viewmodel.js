@@ -575,6 +575,7 @@ function AppViewModel() {
         var match = ko.utils.arrayFirst(self.userCategories(), function(userCategory){
             return catToCheck.toLowerCase() == userCategory.toLowerCase();
         });
+        console.log(match);
         if (match){
             return match;
         } else {
