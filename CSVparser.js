@@ -75,7 +75,7 @@ var CSVFileReader = (function(){
 			thisItem.desc = thisLine[docData.descIndex].substring(0,31);
 
             if (docData.descIndex != null){
-            	thisItem.cat = tinybudget.viewmodel.checkCategory(thisLine[descIndex]);
+            	thisItem.cat = tinybudget.viewmodel.checkCategory(thisLine[docData.descIndex]);
             } else {
             	var re = /-/
             	var match = re.test(thisLine[docData.amountIndex]);
