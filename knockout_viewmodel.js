@@ -576,9 +576,9 @@ function AppViewModel() {
             return catToCheck.toLowerCase() == userCategory.toLowerCase();
         });
         if (match){
-            return true;
+            return match;
         } else {
-            return null;
+            return "uncategorized";
         }
     }
 
