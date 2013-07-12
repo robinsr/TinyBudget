@@ -50,18 +50,19 @@ var CSVFileReader = (function(){
 
 		if (docData.amountIndex == null && (docData.debitIndex != null && docData.creditIndex != null)){
 			//console.log('parse using debit/credit');
-			return parseDC(docData);
+			return parseDebitCredit(docData);
 		} else if (docData.amountIndex != null && (docData.debitIndex == null && docData.creditIndex == null)){
 			//console.log('parse using amount');
-			return parseA(docData);
+			return parseAmount(docData);
 		} else {
 			//console.log('send error');
 		}
 
 		
 	}
+
 		// parses CSV files where one column is "amount" and is either negative or positive
-	function parseA(docData){
+	function parseAmount(docData){
 		var parsedItems = [];
 		for (i=docData.firstLineWithMaxItems+1;i<docData.lines.length-1;i++){
 			//console.log("on line",i);
@@ -72,24 +73,20 @@ var CSVFileReader = (function(){
 			var d = thisLine[docData.dateIndex].split("/");
 			thisLine[docData.descIndex] = thisLine[docData.descIndex].replace(replace_string,"");
 			thisItem.desc = thisLine[docData.descIndex].substring(0,31);
-			var re = /-/
-            var match = re.test(thisLine[docData.amountIndex]);
 
-            if (match) {
-            	thisItem.amt = thisLine[docData.amountIndex].replace("-","");
-            	thisItem.cat = "uncategorized";
+            if (docData.descIndex != null){
+            	thisItem.cat = tinybudget.viewmodel.checkCategory();
             } else {
-            	thisItem.amt = thisLine[docData.amountIndex];
-            	thisItem.cat = "payday";
+            	var re = /-/
+            	var match = re.test(thisLine[docData.amountIndex]);
+            	if (match){
+            	thisItem.cat = "uncategorized";
+	            } else {
+	            	thisItem.cat = "payday";
+	            }
             }
 
-            var checkCat = tinybudget.viewmodel.checkCategory;
-
-			if (docData.descIndex != null && thisItem.cat != "payday" && checkCat != null){
-            	thisItem.cat = thisLine[docData.catIndex]
-            } else if (checkCat == null){
-            	console.log("category "+thisLine[docData.catIndex]+" is not an okay category");
-            }
+            thisItem.amt = thisLine[docData.amountIndex].replace("-","");           
 			
 			thisItem.month = d[0];
 			thisItem.day = d[1];
@@ -100,7 +97,7 @@ var CSVFileReader = (function(){
 		return parsedItems;
 	}
 		// parses CSV files where amount is split between "debit" and "credit"
-	function parseDC(docData){
+	function parseDebitCredit(docData){
 		var parsedItems = [];
 		for (i=docData.firstLineWithMaxItems+1;i<docData.lines.length-1;i++){
 			//console.log("on line",i);
