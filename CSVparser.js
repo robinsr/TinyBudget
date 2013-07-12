@@ -84,7 +84,7 @@ var CSVFileReader = (function(){
 
             var checkCat = tinybudget.viewmodel.checkCategory;
 
-			if (docData.descIndex != null && thisItem.cat != "payday" && checkCat){
+			if (docData.descIndex != null && thisItem.cat != "payday" && checkCat != null){
             	thisItem.cat = thisLine[docData.catIndex]
             } else if (checkCat == null){
             	console.log("category "+thisLine[docData.catIndex]+" is not an okay category");
@@ -122,7 +122,7 @@ var CSVFileReader = (function(){
 
 			var checkCat = tinybudget.viewmodel.checkCategory;
 
-			if (docData.descIndex != null && thisItem.cat != "payday" && checkCat){
+			if (docData.descIndex != null && thisItem.cat != "payday" && checkCat != null){
             	thisItem.cat = thisLine[docData.catIndex]
             } else if (checkCat == null){
             	console.log("category "+thisLine[docData.catIndex]+" is not an okay category");
