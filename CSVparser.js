@@ -12,6 +12,7 @@ var CSVFileReader = (function(){
 			debitIndex : null,
 			creditIndex : null,
 			descIndex : null,
+			catIndex: null,
 			maxItemsOnALine : null,
 			firstLineWithMaxItems : null,
 			items : {},
@@ -38,6 +39,7 @@ var CSVFileReader = (function(){
 			else if (cleanString == "debit") {docData.debitIndex = j}
 			else if (cleanString == "credit") {docData.creditIndex = j}
 			else if (cleanString == "date") {docData.dateIndex = j}
+			else if (cleanString == "category") {docData.catIndex = j}
 		}
 
 		for (k=0;k<docData.firstLineWithMaxItems;k++){
@@ -58,6 +60,7 @@ var CSVFileReader = (function(){
 
 		
 	}
+		// parses CSV files where one column is "amount" and is either negative or positive
 	function parseA(docData){
 		var parsedItems = [];
 		for (i=docData.firstLineWithMaxItems+1;i<docData.lines.length-1;i++){
@@ -78,6 +81,10 @@ var CSVFileReader = (function(){
             } else {
             	thisItem.cat = "payday";
             }
+
+            if (docData.descIndex != null && thisItem.cat != "payday"){
+            	thisItem.cat = thisLine[docData.catIndex]
+            }
 			
 			thisItem.month = d[0];
 			thisItem.day = d[1];
@@ -87,6 +94,7 @@ var CSVFileReader = (function(){
 		}
 		return parsedItems;
 	}
+		// parses CSV files where amount is split between "debit" and "credit"
 	function parseDC(docData){
 		var parsedItems = [];
 		for (i=docData.firstLineWithMaxItems+1;i<docData.lines.length-1;i++){
@@ -107,6 +115,11 @@ var CSVFileReader = (function(){
 			} else {
 				//console.log("skipping item",thisLine);
 			}
+
+			if (docData.descIndex != null && thisItem.cat != "payday"){
+            	thisItem.cat = thisLine[docData.catIndex]
+            }
+            
 			thisItem.month = d[0];
 			thisItem.day = d[1];
 			thisItem.year = d[2];
