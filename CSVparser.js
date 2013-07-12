@@ -72,8 +72,8 @@ var CSVFileReader = (function(){
       thisLine[docData.descIndex] = thisLine[docData.descIndex].replace(replace_string,"");
       thisItem.desc = thisLine[docData.descIndex].substring(0,31);
 
-      if (tinybudget.viewmodel.checkCategory(thisLine[docData.descIndex]) != null){
-        thisItem.cat = tinybudget.viewmodel.checkCategory(thisLine[docData.descIndex]);
+      if (tinybudget.viewmodel.checkCategory(thisLine[docData.catIndex]) != null){
+        thisItem.cat = tinybudget.viewmodel.checkCategory(thisLine[docData.catIndex]);
       } else {
         var re = /-/
         var match = re.test(thisLine[docData.amountIndex]);
