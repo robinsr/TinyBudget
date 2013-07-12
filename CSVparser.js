@@ -133,7 +133,8 @@ var CSVFileReader = (function(){
       return parsedItems;
     }
   function addToViewModel(parsed){
-    //console.log(parsed);
+      // 'sorting' mode disables highcharts from rendering repetitively
+    tinybudget.viewmodel.sorting = true;
     var i = 0;
       // look for duplicate items in viewmodel
 
@@ -150,7 +151,10 @@ var CSVFileReader = (function(){
 
       if (i >= parsed.length-1){
         return;
-      } else {
+      } else if (parsed.length - i == 2){
+          // if there is 1 item left in parsed to add to the viewmodel, enable highcharts to render when triggered
+        tinybudget.viewmodel.sorting = false;
+      }else {
         i++;
         setTimeout(add,200);
       }
@@ -179,9 +183,11 @@ var CSVFileReader = (function(){
             reader.onload = (function(theFile){
               return function(e) {
                 var parsed = parseCSV(e.target.result);
-                tinybudget.viewmodel.sorting = true;
-                addToViewModel(parsed);
-                tinybudget.viewmodel.sorting = false;
+                
+                //addToViewModel(parsed);
+
+                console.log(JSON.stringify(parsed));
+                
               }   
             })(file[0]);
 
