@@ -196,9 +196,8 @@ var CSVFileReader = (function(){
                     } else {
                       // all is well?
                     }
-                  })
-                console.log(JSON.stringify(parsed));
-                
+                  });
+                )
               }   
             })(file[0]);
 
