@@ -404,6 +404,7 @@ function addMultipleItems(req,res,query){
             }
           })
         }
+        addThisItem();
       });
     }
   });
