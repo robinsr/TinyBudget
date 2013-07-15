@@ -372,26 +372,31 @@ function checkQueryItemId(query, cb) {
     }
 }
 function addMultipleItems(req,res,query){
+  console.log('called mutli')
   validateSession(query.name,query.sess,function(ex){
     if (!ex){
       respondInsufficient(req,res,"failed auth at addMultipleItems")
       return;
     } else {
+      console.log('passed session check')
       var blob = '';
       req.on('data',function(chunk){
         blob += chunk;
       })
       req.on('end',function(){
+        console.log('request ended');
         var response = '';
         var responseCode = 200;
         var items = JSON.parse(blob);
         var count = 0
         
         function addThisItem(){
+          console.log('adding item')
           var thisItem = items[count]
           var rediskey = "items:" + query.name + ":" + thisItem.year + ":" + thisItem.month;
           client.sadd(redisKey,JSON.stringify(item),function(err){
             if (err) {
+              console.log('error adding to redis')
               response += 'Error adding '+thisItem.itemID+"\n";
               responseCode = 500;
             }
@@ -405,6 +410,7 @@ function addMultipleItems(req,res,query){
           })
         }
         addThisItem();
+        console.log('went too far');
       });
     }
   });
