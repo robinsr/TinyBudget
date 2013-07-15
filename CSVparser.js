@@ -190,14 +190,14 @@ var CSVFileReader = (function(){
                 addToViewModel(parsed);
                 tinybudgetutils.issue('addMultipleItems',[
                   ['name',tinybudget.viewmodel.user.name],
-                  ['sess',tinybudget.viewmodel.user.sess],parsed,function(err,stat,data){
+                  ['sess',tinybudget.viewmodel.user.sess]
+                  ],parsed,function(err,stat,data){
                     if (er || stat == 500){
                       tinybudget.viewmodel.serverError();
                     } else {
                       // all is well?
                     }
-                  });
-                )
+                });
               }   
             })(file[0]);
 
