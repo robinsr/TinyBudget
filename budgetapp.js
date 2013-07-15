@@ -371,7 +371,7 @@ function checkQueryItemId(query, cb) {
         });
     }
 }
-function addMultipleItems(query,cb){
+function addMultipleItems(req,res,query){
   validateSession(query.name,query.sess,function(ex){
     if (!ex){
       respondInsufficient(req,res,"failed auth at addMultipleItems")
@@ -810,6 +810,13 @@ function handler(req, res) {
                     return;
                 } else {
                     respondInsufficient(req, res, 'Requires name, session, year, month, day, amount, category, description');
+                }
+            } else if (p == 'addMultipleItems') {
+                if (q.name && q.sess) {
+                    addMultipleItems(req, res, q);
+                    return;
+                } else {
+                    respondInsufficient(req, res, 'Requires name, session');
                 }
             } else if (p == 'deleteItem') {
                 if (q.name && q.sess && q.year && q.day && q.month && q.itemid) {
