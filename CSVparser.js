@@ -147,7 +147,8 @@ var CSVFileReader = (function(){
 
       //console.log(progress);
       var gluedDate = parsed[i].month +"/"+ parsed[i].day +"/"+ parsed[i].year;
-      var row = new rowitem(false,parsed[i].desc,parsed[i].amt,gluedDate,parsed[i].cat,parsed[i].itemId,null,null);
+        // loadedFromServer set to True, prevents auto loading to server
+      var row = new rowitem(true,parsed[i].desc,parsed[i].amt,gluedDate,parsed[i].cat,parsed[i].itemId,null,null);
       tinybudget.viewmodel.userItems.push(row);
       
 
@@ -186,8 +187,16 @@ var CSVFileReader = (function(){
               return function(e) {
                 var parsed = parseCSV(e.target.result);
                 
-                //addToViewModel(parsed);
-
+                addToViewModel(parsed);
+                tinybudgetutils.issue('addMultipleItems',[
+                  ['name':tinybudget.viewmodel.user.name],
+                  ['sess':tinybudget.viewmodel.user.sess],parsed,function(err,stat,data){
+                    if (er || stat == 500){
+                      tinybudget.viewmodel.serverError();
+                    } else {
+                      // all is well?
+                    }
+                  })
                 console.log(JSON.stringify(parsed));
                 
               }   
