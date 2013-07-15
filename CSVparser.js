@@ -192,7 +192,7 @@ var CSVFileReader = (function(){
                   ['name',tinybudget.viewmodel.user.name],
                   ['sess',tinybudget.viewmodel.user.sess]
                   ],parsed,function(err,stat,data){
-                    if (er || stat == 500){
+                    if (err || stat == 500){
                       tinybudget.viewmodel.serverError();
                     } else {
                       // all is well?
