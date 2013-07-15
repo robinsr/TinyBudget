@@ -381,6 +381,7 @@ function addMultipleItems(req,res,query){
       console.log('passed session check')
       var blob = '';
       req.on('data',function(chunk){
+        console.log('data' +chunk.toString())
         blob += chunk;
       })
       req.on('end',function(){
