@@ -395,7 +395,7 @@ function addMultipleItems(req,res,query){
               response += 'Error adding '+thisItem.itemID+"\n";
               responseCode = 500;
             }
-            if (count >= items.length){
+            if (count >= items.length-1){
               res.writeHead(responseCode);
               res.end(response);
             } else {
