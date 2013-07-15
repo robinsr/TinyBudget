@@ -371,6 +371,26 @@ function checkQueryItemId(query, cb) {
         });
     }
 }
+function addMultipleItems(query,cb){
+  validateSession(query.name,query.sess,function(ex){
+    if (!ex){
+      respondInsufficient(req,res,"failed auth at addMultipleItems")
+      return;
+    } else {
+      var blob = '';
+      req.on('data',function(chunk){
+        blob += chunk;
+      })
+      req.on('end',function(){
+        var items = JSON.parse(blob);
+        items.forEach(function(item){
+          var rediskey = "items:" + query.name + ":" + item.year + ":" + item.month;
+          client.sadd(redisKey,JSON.stringify(item))
+        })
+      });
+    }
+  });
+}
 function addItem(req, res, query) {
     validateSession(query.name, query.sess, function (ex) {
         if (!ex) {
@@ -391,6 +411,7 @@ function addItem(req, res, query) {
                             if (members[counter]) {
                                 var this_member = JSON.parse(members[counter]);
                                 if (this_member.itemid == query.itemid) {
+                                      // srem to overwrite already set items
                                     client.srem(key, JSON.stringify(this_member), function (err, exx) {
                                         if (err) {
                                             res.writeHead(500, { 'Content-Type': 'text/plain' });
