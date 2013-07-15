@@ -382,11 +382,28 @@ function addMultipleItems(query,cb){
         blob += chunk;
       })
       req.on('end',function(){
+        var response = '';
+        var responseCode = 200;
         var items = JSON.parse(blob);
-        items.forEach(function(item){
-          var rediskey = "items:" + query.name + ":" + item.year + ":" + item.month;
-          client.sadd(redisKey,JSON.stringify(item))
-        })
+        var count = 0
+        
+        function addThisItem(){
+          var thisItem = items[count]
+          var rediskey = "items:" + query.name + ":" + thisItem.year + ":" + thisItem.month;
+          client.sadd(redisKey,JSON.stringify(item),function(err){
+            if (err) {
+              response += 'Error adding '+thisItem.itemID+"\n";
+              responseCode = 500;
+            }
+            if (count >= items.length){
+              res.writeHead(responseCode);
+              res.end(response);
+            } else {
+              count++
+              addThisItem();
+            }
+          })
+        }
       });
     }
   });
