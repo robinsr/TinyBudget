@@ -89,7 +89,7 @@ var CSVFileReader = (function(){
       thisItem.month = d[0];
       thisItem.day = d[1];
       thisItem.year = d[2];
-      thisItem.itemId = CryptoJS.MD5(Math.random().toString());
+      thisItem.itemId = CryptoJS.MD5(Math.random().toString()).toString();
 
       parsedItems.push(thisItem);
     }
