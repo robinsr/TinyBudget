@@ -151,6 +151,7 @@ var tinybudgetutils = (function(){
             $.ajax({
               url: url,
               type: 'POST',
+			  contentType: 'application/json',
               data: JSON.stringify(Json),
               error: function(dat){
                 cb(true);
