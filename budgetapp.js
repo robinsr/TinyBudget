@@ -1,8 +1,9 @@
 var app = require('http').createServer(handler)
   , path = require('path')
   , fs = require('fs')
-  , redis = require('redis')
-  , client = redis.createClient()
+  , databaseUrl = "tinybudget",
+  , collections = ["users", "items","sessions"],
+  , db = require("mongojs").connect(databaseUrl, collections),
   , nodeurl = require('url')
   , crypto = require('crypto')
   , qs = require('qs')
@@ -23,6 +24,21 @@ var mimeType = {
     '.eot': 'application/vnd.ms-fontobject',
     '': 'text/html'
 };
+
+function itemMonth(obj){
+    this.month = obj.month;
+    this.year = obj.year;
+    this.query_short = obj.year + obj.month;
+    this.items = [];
+}
+function item(obj){
+    this.cat = obj.cat;
+    this.flagged = obj.flagged;
+    this.comment = obj.comment;
+    this.amount = obj.amount;
+    this.desc = obj.desc;
+    this.itemid = obj.itemid;
+}
 var todays_date = {}
 
     // some really weird stuff happens here arount the 30th and 31st of some months
@@ -66,24 +82,25 @@ function validateSession(n, s, cb) {
 
         // regular session validation
     } else {
-        client.exists("session:" + n, function (ex, r) {
-            if (r === 0) {
+        db.sessions.findOne({user:n}, function (ex, r) {
+            if (r == null) {
                 cb(false);
                 return;
+            } else if (r.session == s) {
+                cb(true);
+                return;
             } else {
-                client.get("session:" + n, function (err, r) {
-                    if (r == s) {
-                        cb(true);
-                        return;
-                    } else {
-                        cb(false);
-                        return;
-                    }
-                })
+                cb(false);
+                return;
             }
         });
     }
 }
+
+/*
+ *  getYear depricated
+ *
+
 function getYear(req, res, query) {
     validateSession(query.name, query.sess, function (val) {
         if (!val) {
@@ -130,44 +147,25 @@ function getYear(req, res, query) {
         }
     });
 }
+ *
+ */
+
 function getMonth(req, res, query) {
     validateSession(query.name, query.sess, function (val) {
         if (!val) {
             respondInsufficient(req, res, "failed auth at getMonth");
             return;
         } else {
-            var month_key = "items:" + query.name + ":" + query.year + ":" + query.month;
-            client.exists(month_key, function (err, exx) {
-                if (exx === 0) {
+            db.items.findOne({user: query.name, year: query.year, month: query.month},{items:1},function(err, r){
+                if (err) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({}));
+                } else if (r == null || r.items.length == 0){
                     res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end("{}");
-                    client.expire("session:" + query.sess, 1800);
-                    return;
+                    res.end(JSON.stringify({}));
                 } else {
-                    client.smembers(month_key, function (errr, members) {
-                        if (errr) {
-                            res.writeHead(500, { 'Content-Type': 'text/plain' });
-                            res.end('Error retrieving month data');
-                            return;
-                        } else {
-                            var counter = 0;
-                            var return_ob = {};
-                            return_ob.items = [];
-                            function sweep() {
-                                if (members[counter]) {
-                                    return_ob.items.push(JSON.parse(members[counter]))
-                                    counter++;
-                                    sweep();
-                                } else {
-                                    res.writeHead(200, { 'Content-Type': 'application/json' });
-                                    res.end(JSON.stringify(return_ob));
-                                    client.expire("session:" + query.sess, 1800);
-                                    return;
-                                }
-                            }
-                            sweep();
-                        } // add response here 'something went wrong'
-                    })
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({items: r.items}));
                 }
             })
         }
@@ -175,7 +173,6 @@ function getMonth(req, res, query) {
 }
 
 function getInit(req, res, query) {
-    console.log('im alive and updated')
     validateSession(query.name, query.sess, function (val) {
         if (!val) {
             respondInsufficient(req, res, "failed auth at getInit");
@@ -184,56 +181,52 @@ function getInit(req, res, query) {
             var return_ob = {};
             return_ob.date = JSON.parse(JSON.stringify(todays_date));
             return_ob.items = [];
-            client.smembers("cat:" + query.name, function (err, user_cats) {
-                if (err) {
-                    console.log('error getting categories')
-                } else {
-                    return_ob.categories = user_cats;
-                }
-            });
-            var recent_month_keys = [
-                "items:" + query.name + ":" + todays_date.year + ":" + todays_date.month,
-                "items:" + query.name + ":" + todays_date.one_month_back_yr + ":" + todays_date.one_month_back,
-                "items:" + query.name + ":" + todays_date.two_month_back_yr + ":" + todays_date.two_month_back
-            ];
 
-            // get number of members in each month
-            var counter = 0
-            function retrieveMonth() {
-                if (recent_month_keys[counter]) {
-                    client.exists(recent_month_keys[counter], function (errr, ex) {
-                        if (errr) {
-                            res.writeHead(500, { 'Content-Type': 'text/plain' });
-                            res.end('could not retrieve month keys (1)');
-                            return
-                        } else {
-                            client.smembers(recent_month_keys[counter], function (er5, members) {
-                                console.log(recent_month_keys[counter]);
-                                var counter_i = 0;
-                                function sweep() {
-                                    if (members[counter_i]) {
-                                        return_ob.items.push(JSON.parse(members[counter_i]));
-                                        counter_i++;
-                                        sweep();
-                                    } else {
-                                        counter++
-                                        retrieveMonth();
-                                    }
-                                }
-                                sweep();
+            async.parallel([function(cb){
+                db.users.findOne({user: query.name},function (err, user) {
+                    if (err) {
+                        cb('error!')
+                    } else {
+                        return_ob.categories = user.categories;
+                        cb(null);
+                    }
+                });
+            },
+            function(cb){
+                var query_upper_bound = todays_date.year + todays_date.month;
+                var query_lower_bound = todays_date.two_month_back_yr + todays_date.two_month_back;
+
+                db.items.find({user: query.name, query_short: {$gte : query_lower_bound, $lte: query_upper_bound}},function(err,monthItemIds){
+                    if (err) {
+                        cb('error!')
+                    } else {
+                        async.each(monthItemIds,function(monthItemId,cbb){
+                            db.findOne({_id:monthItemId},function(monthItem){
+                                monthItem.items.forEach(function(item){
+                                    return_ob.items.push(item);
+                                })
                             })
-                        }
-                    })
+                        },function(err){
+                            if (err) {
+                                cb('error!')
+                            } else {
+                                cb(null);
+                            }
+                        })
+                    }
+                })
+            }],
+            function(err,results){
+                if (err){
+                    res.writeHead(500, { 'Content-Type': 'text/plain' });
+                    res.end('Server Problems');
                 } else {
                     res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify(return_ob));
-                    client.expire("session:" + query.sess, 1800);
-                    return;
+                    res.end(JSON.stringify(return_ob));                        
                 }
-            }
-            retrieveMonth();
+            })
         }
-    });
+    })
 }
 function deleteCategory(req, res, query) {
     validateSession(query.name, query.sess, function (ex) {
@@ -241,8 +234,7 @@ function deleteCategory(req, res, query) {
             respondInsufficient(req, res, "failed auth at deleteCategory");
             return;
         } else {
-            var cat_key = "cat:" + query.name;
-            client.srem(cat_key, query.cat, function (err, exx) {
+            db.users.update({ user:query.name },{ $pull:{ categories: query.cat}},function(err,r){
                 if (err) {
                     res.writeHead(500, { 'Content-Type': 'text/plain' });
                     res.end('Error Removing Category');
@@ -250,10 +242,9 @@ function deleteCategory(req, res, query) {
                 } else {
                     res.writeHead(200, { 'Content-Type': 'text/plain' });
                     res.end('Removed category: ' + query.cat);
-                    client.expire("session:" + query.sess, 1800);
                     return;
                 }
-            });
+            })
         }
     });
 }
@@ -263,44 +254,15 @@ function addCategory(req, res, query) {
             respondInsufficient(req, res, "failed auth at addCategory");
             return;
         } else {
-            var cat_key = "cat:" + query.name;
-            client.exists(cat_key, function (exx) {
-                if (exx == 0) {
-                    client.sadd(cat_key, query.cat, function (err, exx) {
-                        if (err) {
-                            res.writeHead(500, { 'Content-Type': 'text/plain' });
-                            res.end('Error Adding Category');
-                            return;
-                        } else {
-                            res.writeHead(200, { 'Content-Type': 'text/plain' });
-                            res.end('Added category: ' + query.cat);
-                            client.expire("session:" + query.sess, 1800);
-                            return;
-                        }
-                    });
+            db.users.update({ user:query.name },{ $addToSet:{ categories: query.cat}},function(err,r){
+                if (err) {
+                    res.writeHead(500, { 'Content-Type': 'text/plain' });
+                    res.end('Error Adding Category');
+                    return;
                 } else {
-                    client.sismember(cat_key, query.cat, function (err, member) {
-                        console.log('checked if member ' + member)
-                        if (member == 1) {
-                            res.writeHead(400, { 'Content-Type': 'text/plain' });
-                            res.end('Category already exists');
-                            return;
-                        } else {
-                            client.sadd(cat_key, query.cat, function (err, exx) {
-                                if (err) {
-                                    res.writeHead(500, { 'Content-Type': 'text/plain' });
-                                    res.end('Error Adding Category');
-                                    return;
-                                } else {
-                                    res.writeHead(200, { 'Content-Type': 'text/plain' });
-                                    res.end('Added category: ' + query.cat);
-                                    client.expire("session:" + query.sess, 1800);
-                                    return;
-                                }
-                            });
-                        }
-
-                    })
+                    res.writeHead(200, { 'Content-Type': 'text/plain' });
+                    res.end('Added category: ' + query.cat);
+                    return;
                 }
             })
         }
@@ -312,53 +274,24 @@ function deleteItem(req, res, query) {
             respondInsufficient(req, res, "failed auth at deleteItem");
             return;
         } else {
-            var month_key = "items:" + query.name + ":" + query.year + ":" + query.month;
-            client.exists(month_key, function (er, exx) {
-                if (ex == 0) {
-                    res.writeHead(200, { 'Content-Type': 'text/plain' });
-                    res.end('Could not find item');
-                    client.expire("session:" + query.sess, 1800);
+            var query = {user: query.name, year: query.year, month: query.month};
+            var modify = {$pull:{items:{itemid:query:itemid}}}
+            db.items.findAndUpdate(query,modify,function(err,r){
+                if (err) {
+                    res.writeHead(500, { 'Content-Type': 'text/plain' });
+                    res.end('Error removing');
+                    return
                 } else {
-                    client.scard(month_key, function (err, item_count) {
-                        client.smembers(month_key, function (errr, members) {
-                            var counter = 0;
-                            function sweep() {
-                                if (members[counter]) {
-                                    var this_member = JSON.parse(members[counter]);
-                                    if (this_member.itemid == query.itemid) {
-                                        client.srem(month_key, JSON.stringify(this_member), function (err, exx) {
-                                            if (err) {
-                                                res.writeHead(500, { 'Content-Type': 'text/plain' });
-                                                res.end('Error removing');
-                                                return
-                                            } else {
-                                                res.writeHead(200, { 'Content-Type': 'text/plain' });
-                                                res.end('Item Removed');
-                                                client.expire("session:" + query.sess, 1800);
-                                                return
-                                            }
-                                        });
-                                    } else if (counter >= item_count) {
-                                        return;
-                                    } else {
-                                        counter++;
-                                        sweep();
-                                    }
-                                } else {
-                                    res.writeHead(200, { 'Content-Type': 'text/plain' });
-                                    res.end('No item with that id');
-                                    client.expire("session:" + query.sess, 1800);
-                                    return
-                                }
-                            }
-                            sweep();
-                        });
-                    });
+                    res.writeHead(200, { 'Content-Type': 'text/plain' });
+                    res.end('Item Removed');
+                    return
                 }
             })
         }
-    });
+    })
 }
+
+// adds new id to item id none exists - dont need any more 
 function checkQueryItemId(query, cb) {
     var itemid = '';
     if (query.itemid) {
@@ -371,6 +304,9 @@ function checkQueryItemId(query, cb) {
         });
     }
 }
+
+ /*
+  * 
 function addMultipleItems(req,res,query){
   console.log('called mutli')
   validateSession(query.name,query.sess,function(ex){
@@ -416,89 +352,51 @@ function addMultipleItems(req,res,query){
     }
   });
 }
+ *
+ */
+
 function addItem(req, res, query) {
     validateSession(query.name, query.sess, function (ex) {
         if (!ex) {
             respondInsufficient(req, res, "failed auth at addItem");
             return
         } else {
-            var flg = false;
-            var comment = '';
-            query.isflagged ? flg = query.isflagged : flg = false;
-            query.comment ? comment = query.comment : comment = '';
-            checkQueryItemId(query, function (itemid) {
-                var key = "items:" + query.name + ":" + query.year + ":" + query.month;
-                var this_item = { day: query.day, month: query.month, year: query.year, cat: query.cat, desc: query.desc, amt: query.amt, itemid: itemid, isflagged: query.isflagged, comment: query.comment }
-                client.scard(key, function (err, item_count) {
-                    client.smembers(key, function (errr, members) {
-                        var counter = 0;
-                        function sweep() {
-                            if (members[counter]) {
-                                var this_member = JSON.parse(members[counter]);
-                                if (this_member.itemid == query.itemid) {
-                                      // srem to overwrite already set items
-                                    client.srem(key, JSON.stringify(this_member), function (err, exx) {
-                                        if (err) {
-                                            res.writeHead(500, { 'Content-Type': 'text/plain' });
-                                            res.end('Error removing');
-                                            return
-                                        } else {
-                                            client.sadd(key, JSON.stringify(this_item), function (err) {
-                                                if (err) {
-                                                    res.writeHead(500, { 'Content-Type': 'text/plain' });
-                                                    res.end('Error adding item');
-                                                    return
-                                                } else {
-                                                    res.writeHead(200, { 'Content-Type': 'text/plain' });
-                                                    res.end('Item Added: ' + itemid);
-                                                    client.expire("session:" + query.sess, 1800);
-                                                    return
-                                                }
-                                            });
-                                        }
-                                    });
-                                } else if (counter >= item_count) {
-                                    return;
-                                } else {
-                                    counter++;
-                                    sweep();
-                                }
-                            } else {
-                                client.sadd(key, JSON.stringify(this_item), function (err) {
-                                    if (err) {
-                                        res.writeHead(500, { 'Content-Type': 'text/plain' });
-                                        res.end('Error adding item');
-                                        return
-                                    } else {
-                                        res.writeHead(200, { 'Content-Type': 'text/plain' });
-                                        res.end('Item Added: ' + itemid);
-                                        client.expire("session:" + query.sess, 1800);
-                                        return
-                                    }
-                                });
-                            }
-                        }
-                        sweep();
-                    });
-                });
+            var newItem = new item({
+                    cat : query.cat;
+                    flagged : query.isflagged ? query.isflagged : false;
+                    comment : query.comment ? query.comment : '';
+                    amount : query.amount;
+                    desc : query.desc;
+                    itemid : query.itemid;
             });
+
+            var query = {user: query.name, year: query.year, month: query.month};
+            var modify = {$addToSet:{items:newItem}}
+
+            db.items.findAndModify(query,modify,function(err,result){
+                if (err) {
+                    res.writeHead(500, { 'Content-Type': 'text/plain' });
+                    res.end('Error adding item');
+                    return
+                } else {
+                    res.writeHead(200, { 'Content-Type': 'text/plain' });
+                    res.end('Item Added: ' + itemid);
+                    return
+                }
+            })
         }
-    });
+    })
 }
 function logout(req, res, query) {
-    var uname = "session:" + query.name;
-    client.get(uname, function (err, c) {
-        if (err) throw err;
-        if (c) {
-            client.del(uname, function () {
-                res.writeHead(200, { 'Content-Type': 'text/plain' });
-                res.end('Logged Out');
-            });
+    db.sessions.remove({user:query.name},function(err,r){
+        if (err) {
+            res.writeHead(200, { 'Content-Type': 'text/plain' });
+            res.end('Logged Out');
         } else {
             res.writeHead(400, { 'Content-Type': 'text/plain' });
-            res.end('You were logged in? Maybe your session expired');
+            res.end('No session found');
         }
-    });
+    })
 }
 function login(req, res, query) {
     var p = /[0-9a-f]{32}/
@@ -813,11 +711,11 @@ function handler(req, res) {
                     respondInsufficient(req, res, 'Requires name');
                 }
             } else if (p == 'addItem') {
-                if (q.name && q.sess && q.year && q.day && q.month && q.amt && q.cat && q.desc) {
+                if (q.name && q.sess && q.year && q.day && q.month && q.amt && q.cat && q.desc && q.itemid) {
                     addItem(req, res, q);
                     return;
                 } else {
-                    respondInsufficient(req, res, 'Requires name, session, year, month, day, amount, category, description');
+                    respondInsufficient(req, res, 'Requires name, session, year, month, day, amount, category, description, itemid');
                 }
             } else if (p == 'addMultipleItems') {
                 if (q.name && q.sess) {
