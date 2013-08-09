@@ -312,12 +312,12 @@ function addItem(req, res, query) {
             return
         } else {
             var newItem = new item({
-                    cat : query.cat;
-                    flagged : query.isflagged ? query.isflagged : false;
-                    comment : query.comment ? query.comment : '';
-                    amount : query.amount;
-                    desc : query.desc;
-                    itemid : query.itemid;
+                    cat : query.cat,
+                    flagged : query.isflagged ? query.isflagged : false,
+                    comment : query.comment ? query.comment : '',
+                    amount : query.amount,
+                    desc : query.desc,
+                    itemid : query.itemid
             });
 
             var query = {user: query.name, year: query.year, month: query.month};
