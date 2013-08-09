@@ -8,7 +8,8 @@ var app = require('http').createServer(handler)
   , crypto = require('crypto')
   , qs = require('qs')
   , util = require('util')
-  , moment = require('moment');
+  , moment = require('moment')
+  , async = require('async');
 
 var mimeType = {
     '.js': 'text/javascript',
@@ -97,58 +98,6 @@ function validateSession(n, s, cb) {
     }
 }
 
-/*
- *  getYear depricated
- *
-
-function getYear(req, res, query) {
-    validateSession(query.name, query.sess, function (val) {
-        if (!val) {
-            respondInsufficient(req, res, "failed auth at getYear");
-            return;
-        } else {
-            var counter = 1;
-            var year_key = "items:" + query.name + ":" + query.year + ":";
-            var return_ob = {};
-            return_ob.items = {};
-            function retrieveMonth() {
-                if (counter < 13) {
-                    client.exists(year_key + counter, function (errr, ex) {
-                        if (errr) {
-                            return_ob.items[counter].push("Error: month " + counter)
-                            counter_i++;
-                            sweep();
-                        } else {
-                            return_ob.items[counter] = [];
-                            client.smembers(year_key + counter, function (er5, members) {
-                                var counter_i = 0;
-                                function sweep() {
-                                    if (members[counter_i]) {
-                                        return_ob.items[counter].push(JSON.prase(members[counter_i]));
-                                        counter_i++;
-                                        sweep();
-                                    } else {
-                                        counter++
-                                        retrieveMonth();
-                                    }
-                                }
-                                sweep();
-                            })
-                        }
-                    })
-                } else {
-                    res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify(return_ob));
-                    client.expire("session:" + query.sess, 1800);
-                    return;
-                }
-            }
-            retrieveMonth();
-        }
-    });
-}
- *
- */
 
 function getMonth(req, res, query) {
     validateSession(query.name, query.sess, function (val) {
@@ -204,6 +153,7 @@ function getInit(req, res, query) {
                             db.findOne({_id:monthItemId},function(monthItem){
                                 monthItem.items.forEach(function(item){
                                     return_ob.items.push(item);
+                                    cbb(null);
                                 })
                             })
                         },function(err){
@@ -399,41 +349,29 @@ function logout(req, res, query) {
     })
 }
 function login(req, res, query) {
-    var p = /[0-9a-f]{32}/
-    var uname = "user:" + query.name;
-    client.get(uname, function (err, r) {
-        if (err) {
-            console.log('error');
+    db.sessions.findOne({user:query.name},function(err,result){
+        if (err){
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Server Error');
+        } else if (result == null){
+            res.writeHead(400, { 'Content-Type': 'text/plain' });
+            res.end('User not found');
         } else {
-            if (r !== null) {
-                var user_object = JSON.parse(r);
-                var return_object = {};
-                var concat_pass = query.pass + user_object.salt;
-                var hashed_pass = crypto.createHash('md5').update(concat_pass).digest('hex');
-                if (hashed_pass == user_object.pass) {
-                    requestHash(function (session_val) {
-                        return_object.sessionid = session_val;
-                        if (user_object.email) {
-                            return_object.email = user_object.email
-                        } else {
-                            return_object.email = 'no email';
-                        }
-                        var session_key = "session:" + query.name;
-                        client.set(session_key, session_val, function () {
-                            client.expire(session_key, 1800);
-                            res.writeHead(200, { 'Content-Type': 'application/json' });
-                            res.end(JSON.stringify(return_object));
-                            return;
-                        });
-                    });
-                } else {
-                    res.writeHead(400, { 'Content-Type': 'text/plain' });
-                    res.end('Invalid Username or Password');
-                    return;
-                }
+            var concat_pass = query.pass + result.salt;
+            var hashed_pass = crypto.createHash('md5').update(concat_pass).digest('hex');
+            if (hashed_pass == result.pass) {
+                requestHash(function(hash){
+                    return_object = {
+                        sessionid : session_val,
+                        email: result.email
+                    }
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify(return_object));
+                    db.sessions.insert({user:query.name,session:hash})
+                })
             } else {
                 res.writeHead(400, { 'Content-Type': 'text/plain' });
-                res.end('User not found');
+                res.end('Invalid Username or Password');
                 return;
             }
         }
@@ -441,43 +379,28 @@ function login(req, res, query) {
 }
 
 function createUser(req, res, query) {
-    client.exists("user:" + query.name, function (ex, r) {
-        console.log(r);
-        if (r == 1) {
+    db.users.findOne({user:query.name},function(err,result){
+        if (err){
+
+        } else if (result != null){
             res.writeHead(400, { 'Content-Type': 'text/plain' });
             res.end('Account exists for ' + query.name);
-            return;
         } else {
             requestHash(function (hash_salt) {
                 var hashed_pass_and_salt = crypto.createHash('md5').update(query.pass + hash_salt).digest('hex');
-                var user_setup = {
+                db.users.insert({
                     name: query.name,
                     email: query.email,
                     pass: hashed_pass_and_salt,
                     salt: hash_salt
-                };
-                console.log(user_setup);
-                var udata = JSON.stringify(user_setup);
-                var uname = "user:" + query.name;
-                client.set(uname, udata, function (err, rr) {
+                },function (err, rr) {
                     if (err) {
-                        console.log('error');
                         res.writeHead(500, { 'Content-Type': 'text/plain' });
-                        res.end('Fail');
+                        res.end('Error creating user');
                         return;
                     } else {
-                        client.get(uname, function (err, rrr) {
-                            if (err) {
-                                console.log('error getting value');
-                                res.writeHead(500, { 'Content-Type': 'text/plain' });
-                                res.end('Fail');
-                                return;
-                            } else {
-                                res.writeHead(200, { 'Content-Type': 'text/plain' });
-                                res.end('Success! created account for ' + query.name + ' with this ' + rrr);
-                                return;
-                            }
-                        });
+                        res.writeHead(200, { 'Content-Type': 'text/plain' });
+                        res.end('Success! created account for ' + query.name + ' with this ' + rrr);
                     }
                 });
             });
@@ -490,34 +413,23 @@ function changeEmail(req,res,q){
             respondInsufficient(req, res, "failed auth at changePass");
             return
         } else {
-            var clientKey = 'user:'+q.name;
-            client.exists(clientKey,function(er,ex){
+            db.users.findAndModify({
+                query: {user:query.name},
+                update: {
+                    $set: { email: query.email }
+                },
+                new: true,
+            },function(er,result){
                 if (er){
                     res.writeHead(500, { 'Content-Type': 'text/plain' });
                     res.end('Server Error');
                 } else {
-                    if (ex == 1){
-                        client.get(clientKey,function(err,result){
-                            var user = JSON.parse(result);
-                            user.email = q.email;
-                            client.set(clientKey,JSON.stringify(user), function(err,exx){
-                                if (err){
-                                    res.writeHead(500, { 'Content-Type': 'text/plain' });
-                                    res.end('Server Error');
-                                } else {
-                                    res.writeHead(200, { 'Content-Type': 'text/plain' });
-                                    res.end('Pass successfully changed');
-                                }
-                            });                               
-                        })
-                    } else {
-                        res.writeHead(400, { 'Content-Type': 'text/plain' });
-                        res.end('Could not find user '+q.name);
-                    }
+                    res.writeHead(200, { 'Content-Type': 'text/plain' });
+                    res.end('Pass successfully changed');
                 }
             })
         }
-    });
+    })
 }
 function isHash(hash,cb){
     var p = /[0-9a-f]{32}/;
@@ -529,41 +441,37 @@ function changePass(req, res, q) {
             respondInsufficient(req, res, "failed auth at changePass");
             return
         } else {
-            var clientKey = 'user:'+q.name;
-            client.exists(clientKey,function(er,ex){
+            db.users.findOne({user:query.name},function(er,result){
                 if (er){
                     res.writeHead(500, { 'Content-Type': 'text/plain' });
                     res.end('Server Error');
+                } else if (result == null){
+                    res.writeHead(400, { 'Content-Type': 'text/plain' });
+                    res.end('Could not find user '+q.name);
                 } else {
-                    if (ex == 1){
-                        client.get(clientKey,function(err,result){
-                            var user = JSON.parse(result);
-                            console.log('oldpass: '+q.oldPass);
-                            console.log('newpass: '+q.newPass);
-                            var combined = q.oldPass + user.salt;
-                            var hashCheck = crypto.createHash('md5').update(combined).digest('hex');
-                            console.log('hashCheck '+hashCheck);
-                            console.log('userPass '+user.pass);
-                            if (hashCheck == user.pass){
-                                user.pass = crypto.createHash('md5').update(q.newPass+user.salt).digest('hex');
-                                client.set(clientKey,JSON.stringify(user), function(err,exx){
-                                    if (err){
-                                        res.writeHead(500, { 'Content-Type': 'text/plain' });
-                                        res.end('Server Error');
-                                    } else {
-                                        res.writeHead(200, { 'Content-Type': 'text/plain' });
-                                        res.end('Pass successfully changed');
-                                    }
-                                });
+                    var combined = q.oldPass + result.salt;
+                    var hashCheck = crypto.createHash('md5').update(combined).digest('hex');
+                    if (hashCheck == result.pass){
+                        newPass = crypto.createHash('md5').update(q.newPass+user.salt).digest('hex');
+                        db.users.findAndModify({
+                            query: {user:query.name},
+                            update: {
+                                $set: { pass: newPass }
+                            },
+                            new: true,
+                        },function(er,result){
+                            if (er){
+                                res.writeHead(500, { 'Content-Type': 'text/plain' });
+                                res.end('Server Error');
                             } else {
-                                res.writeHead(400, { 'Content-Type': 'text/plain' });
-                                res.end('Denied');
-                            }                                
+                                res.writeHead(200, { 'Content-Type': 'text/plain' });
+                                res.end('Pass successfully changed');
+                            }
                         })
                     } else {
                         res.writeHead(400, { 'Content-Type': 'text/plain' });
-                        res.end('Could not find user '+q.name);
-                    }
+                        res.end('Incorrect Password');
+                    }                                
                 }
             })
         }
@@ -621,37 +529,26 @@ function sanitizeString(req, next) {
         next(null)
     } else {
 
-        // construct object with query properties
+        // construct object with query params
         var q = qs.parse(nodeurl.parse(req.url).query);
 
         // array of expected queries
         var expected = ['name', 'pass', 'sess', 'day', 'month', 'year', 'comment', 'isflagged', 'cat', 'amt', 'desc', 'itemid'];
-        // general constraints for each property
 
-        var counter = 0;
-
-        // check each query agains lengthLimits
-        function checkQuery() {
-            if (expected[counter]) {
-                var property = expected[counter];
-                if (!q[property]) {
-                    counter++;
-                    checkQuery()
-                } else if (q[property].length <= lengthLimits[property]) {
-                    counter++;
-                    checkQuery()
-                } else {
-                    console.log(property + ' too long')
-                    next(null)
-                    return;
-                }
-
-                // if there is no expected (ie expected[12]) then each query passed its test
+        // for each parm, its either present and too long, present and fine, or not present. call error when too long
+        async.each(expected,function(param,cb){
+            if (!q[param]) {
+                cb(null)
+            } else if (q[param].length <= lengthLimits[param]) {
+                cb(null)
             } else {
-                next(true);
+                cb('error!')
             }
-        }
-        checkQuery();
+        },function(err,result){
+            if (err == null){
+                next(true)
+            }
+        })
     }
 }
 
