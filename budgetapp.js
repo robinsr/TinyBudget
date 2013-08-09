@@ -677,8 +677,10 @@ setTodaysDate();
 process.argv.forEach(function (val, index, array) {
   if (index == '-d'){
     app.listen(8125)
+    console.log('Dev - listening on 8125')
   } else {
     app.listen(8124);
+    console.log('Prod - listening on 8124')
   }
 });
 
