@@ -672,7 +672,16 @@ function handler(req, res) {
 }
 
 setTodaysDate();
-app.listen(8125);
+
+// parameters for regular port or dev port
+process.argv.forEach(function (val, index, array) {
+  if (index == '-d'){
+    app.listen(8125)
+  } else {
+    app.listen(8124);
+  }
+});
+
 
 
 
