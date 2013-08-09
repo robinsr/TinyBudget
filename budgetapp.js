@@ -381,7 +381,8 @@ function login(req, res, query) {
 function createUser(req, res, query) {
     db.users.findOne({user:query.name},function(err,result){
         if (err){
-
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Error creating user');
         } else if (result != null){
             res.writeHead(400, { 'Content-Type': 'text/plain' });
             res.end('Account exists for ' + query.name);
@@ -389,7 +390,7 @@ function createUser(req, res, query) {
             requestHash(function (hash_salt) {
                 var hashed_pass_and_salt = crypto.createHash('md5').update(query.pass + hash_salt).digest('hex');
                 db.users.insert({
-                    name: query.name,
+                    user: query.name,
                     email: query.email,
                     pass: hashed_pass_and_salt,
                     salt: hash_salt
