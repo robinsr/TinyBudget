@@ -225,7 +225,7 @@ function deleteItem(req, res, query) {
             return;
         } else {
             var query = {user: query.name, year: query.year, month: query.month};
-            var modify = {$pull:{items:{itemid:query:itemid}}}
+            var modify = {$pull:{items:{itemid:query.itemid}}}
             db.items.findAndUpdate(query,modify,function(err,r){
                 if (err) {
                     res.writeHead(500, { 'Content-Type': 'text/plain' });
