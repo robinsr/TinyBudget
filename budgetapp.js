@@ -400,7 +400,7 @@ function createUser(req, res, query) {
                         return;
                     } else {
                         res.writeHead(200, { 'Content-Type': 'text/plain' });
-                        res.end('Success! created account for ' + query.name + ' with this ' + rrr);
+                        res.end('Success! created account for ' + query.name);
                     }
                 });
             });
