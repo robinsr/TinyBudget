@@ -674,15 +674,14 @@ function handler(req, res) {
 setTodaysDate();
 
 // parameters for regular port or dev port
-process.argv.forEach(function (val, index, array) {
-  if (index == '-d'){
+
+if (process.argv[2].val == '-d'){
     app.listen(8125)
     console.log('Dev - listening on 8125')
-  } else {
+} else {
     app.listen(8124);
     console.log('Prod - listening on 8124')
-  }
-});
+}
 
 
 
