@@ -362,7 +362,7 @@ function login(req, res, query) {
             if (hashed_pass == result.pass) {
                 requestHash(function(hash){
                     return_object = {
-                        sessionid : session_val,
+                        sessionid : hash,
                         email: result.email
                     }
                     res.writeHead(200, { 'Content-Type': 'application/json' });
