@@ -675,7 +675,7 @@ setTodaysDate();
 
 // parameters for regular port or dev port
 
-if (process.argv[2].val == '-d'){
+if (process.argv[2] == '-d'){
     app.listen(8125)
     console.log('Dev - listening on 8125')
 } else {
