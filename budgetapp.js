@@ -349,7 +349,7 @@ function logout(req, res, query) {
     })
 }
 function login(req, res, query) {
-    db.sessions.findOne({user:query.name},function(err,result){
+    db.users.findOne({user:query.name},function(err,result){
         if (err){
             res.writeHead(500, { 'Content-Type': 'text/plain' });
             res.end('Server Error');
