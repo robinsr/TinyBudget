@@ -360,14 +360,25 @@ function login(req, res, query) {
             var concat_pass = query.pass + result.salt;
             var hashed_pass = crypto.createHash('md5').update(concat_pass).digest('hex');
             if (hashed_pass == result.pass) {
-                requestHash(function(hash){
-                    return_object = {
-                        sessionid : hash,
-                        email: result.email
+                return_object = {
+                    email: result.email
+                }
+                db.sessions.findOne({user:query.name},function(err,session){
+                    if (err){
+                        res.writeHead(500, { 'Content-Type': 'text/plain' });
+                        res.end('Server Error');
+                    } else if (session != null) {
+                        return_object.sesionid = session.session;
+                        res.writeHead(200, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify(return_object));
+                    } else {
+                        requestHash(function(hash){
+                            return_object.sessionid = hash;
+                            res.writeHead(200, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify(return_object)); 
+                            db.sessions.insert({user:query.name,session:hash})
+                        }
                     }
-                    res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify(return_object));
-                    db.sessions.insert({user:query.name,session:hash})
                 })
             } else {
                 res.writeHead(400, { 'Content-Type': 'text/plain' });
