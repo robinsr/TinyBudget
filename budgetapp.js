@@ -377,7 +377,7 @@ function login(req, res, query) {
                             res.writeHead(200, { 'Content-Type': 'application/json' });
                             res.end(JSON.stringify(return_object)); 
                             db.sessions.insert({user:query.name,session:hash})
-                        }
+                        })
                     }
                 })
             } else {
