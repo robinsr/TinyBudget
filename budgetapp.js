@@ -130,6 +130,7 @@ function getInit(req, res, query) {
             var return_ob = {};
             return_ob.date = JSON.parse(JSON.stringify(todays_date));
             return_ob.items = [];
+            return_ob.categories = [];
 
             async.series([function(cb){
                 db.users.findOne({user: query.name},function (err, user) {
