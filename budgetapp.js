@@ -368,7 +368,7 @@ function login(req, res, query) {
                         res.writeHead(500, { 'Content-Type': 'text/plain' });
                         res.end('Server Error');
                     } else if (session != null) {
-                        return_object.sesionid = session.session;
+                        return_object.sessionid = session.session;
                         res.writeHead(200, { 'Content-Type': 'application/json' });
                         res.end(JSON.stringify(return_object));
                     } else {
