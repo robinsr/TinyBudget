@@ -131,7 +131,7 @@ function getInit(req, res, query) {
             return_ob.date = JSON.parse(JSON.stringify(todays_date));
             return_ob.items = [];
 
-            async.parallel([function(cb){
+            async.series([function(cb){
                 db.users.findOne({user: query.name},function (err, user) {
                     if (err) {
                         cb('error!')
