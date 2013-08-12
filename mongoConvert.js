@@ -42,14 +42,10 @@ var databaseUrl = "tinybudget"
 							    amount: item.amount,
 							    desc: item.desc,
 							    itemid: item.itemid
-							},function(){
-								callbackii(null);
-							})
-						},function(){
-							callbacki(null);
-						})
+							},function(){callbackii(null)})
+						},function(){callbacki(null)})
 					})
-				},callback(null))
+				},function(){callback(null)})
 			})
 		}
 	],function(){
