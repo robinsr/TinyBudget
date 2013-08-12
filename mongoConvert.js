@@ -6,52 +6,56 @@ var databaseUrl = "tinybudget"
   , client = redis.createClient();
 
 (function(){
-	client.keys("user:*",function(err,allUsers){
-
-		async.eachSeries(allUsers,function(user,callback){
-			console.log(user);
-
-			client.get(user,function(err,userData){
-				var parsed = JSON.parse(userData);
-				console.log('user: '+parsed.name)
-				db.users.insert(parsed);
-
-				client.keys("items:"+parsed.name+"*",function(err,itemMonths){
-					async.eachSeries(itemMonths,function(thisMonth,callbacki){
-						console.log(thisMonth);
-						/*client.smembers(thisMonth,function(err,month){
-							var parsedi = JSON.parse(month);
-							console.log(parsedi);
-
-							async.eachSeries(parsedi,function(item,callbackii){
-								console.log('item: '+parsedi.desc)
-								db.items.insert({
-									owner: userDate.name,
-									day: item.dat,
-									month: item.month,
-									year: item.month,
-									query_short: item.year + obj.month,
-								    cat: item.cat,
-								    flagged: item.flagged ? item.flagged : false,
-								    comment: item.comment ? item.comment : '',
-								    amount: item.amount,
-								    desc: item.desc,
-								    itemid: item.itemid
-								},function(){
-									callbackii(null);
-								})
-							},function(){
-								callbacki(null);
-							})
-						})*/
-					},function(){
-						callback(null)
+	async.series([
+		function(callback){
+			client.keys("user:*",function(err,allUsers){
+				async.eachSeries(allUsers,function(user,callbacki){
+					console.log(user);
+					client.get(user,function(err,userData){
+						var parsed = JSON.parse(userData);
+						console.log('user: '+parsed.name)
+						db.users.insert(parsed);
+						callbacki()
 					})
-				})
+				},callback())
 			})
-		},function(){
-			console.log('script completed')
-			process.exit();
-		})
+		},
+		function(callback){
+			client.keys("items:"+parsed.name+"*",function(err,itemMonths){
+				async.eachSeries(itemMonths,function(thisMonth,callbacki){
+					console.log(thisMonth);
+					client.smembers(thisMonth,function(err,month){
+						var parsedi = JSON.parse(month);
+						console.log(parsedi);
+
+						async.eachSeries(parsedi,function(item,callbackii){
+							console.log('item: '+parsedi.desc)
+							db.items.insert({
+								owner: userDate.name,
+								day: item.dat,
+								month: item.month,
+								year: item.month,
+								query_short: item.year + obj.month,
+							    cat: item.cat,
+							    flagged: item.flagged ? item.flagged : false,
+							    comment: item.comment ? item.comment : '',
+							    amount: item.amount,
+							    desc: item.desc,
+							    itemid: item.itemid
+							},function(){
+								callbackii(null);
+							})
+						},function(){
+							callbacki(null);
+						})
+					})
+				},callback())
+			})
+		}
+	],function(){
+		console.log('script completed')
+		process.exit();
 	})
 })();
+
+
