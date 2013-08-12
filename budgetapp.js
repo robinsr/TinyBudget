@@ -136,6 +136,8 @@ function getInit(req, res, query) {
                 db.users.findOne({user: query.name},function (err, user) {
                     if (err) {
                         cb('error!')
+                    } else if (typeof user.categories == 'undefined') {
+                        cb(null);
                     } else {
                         return_ob.categories = user.categories;
                         cb(null);
