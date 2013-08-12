@@ -6,9 +6,9 @@ var databaseUrl = "tinybudget"
   , client = redis.createClient();
 
 var go = (function(){
-	client.keys("user:*",function(err,result){
+	client.keys("user:*",function(err,allUsers){
 
-		async.eachSeries(result,function(user,callback){
+		async.eachSeries(allUsers,function(user,callback){
 			console.log(user);
 
 			client.get(user,function(err,userData){
@@ -36,15 +36,14 @@ var go = (function(){
 								    desc: item.desc,
 								    itemid: item.itemid
 								},function(){
-									callbackii(null);
+									callbacki(null);
 								})
 							})
 						})
 					},function(){
-						callbacki(null)
+						callback(null)
 					})
 				})
-				callback(null)
 			})
 		},function(){
 			console.log('script completed')
