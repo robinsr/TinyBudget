@@ -29,9 +29,10 @@ var databaseUrl = "tinybudget"
 
 						async.eachSeries(thisMonthsItems,function(itemUnP,callbackii){
 							var item = JSON.parse(itemUnP);
-							console.log('item: '+parsedi.desc)
+							var owner = thisMonth.replace('items:','');
+							var owner = owner.replace(/\:[0-9]*:[0-9]*/,'');
 							db.items.insert({
-								owner: userDate.name,
+								owner: owner,
 								day: item.dat,
 								month: item.month,
 								year: item.month,
