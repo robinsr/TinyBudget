@@ -20,8 +20,9 @@ var databaseUrl = "tinybudget"
 					async.eachSeries(itemMonths,function(thisMonth,callbacki){
 						client.smembers(thisMonth,function(err,month){
 							var parsedi = JSON.parse(month);
+							console.log(parsedi);
 
-							async.eachSeries(parsedi,function(item,callbackii){
+							/*async.eachSeries(parsedi,function(item,callbackii){
 								console.log('item: '+parsedi.desc)
 								db.items.insert({
 									owner: userDate.name,
@@ -36,9 +37,11 @@ var databaseUrl = "tinybudget"
 								    desc: item.desc,
 								    itemid: item.itemid
 								},function(){
-									callbacki(null);
+									callbackii(null);
 								})
-							})
+							},function(){
+								callbacki(null);
+							})*/
 						})
 					},function(){
 						callback(null)
