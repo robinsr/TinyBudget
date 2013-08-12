@@ -45,6 +45,6 @@ var go = (function(){
 			})
 		},function(){
 			console.log('script completed')
-		}
+		})
 	})
 })();
