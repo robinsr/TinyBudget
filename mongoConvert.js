@@ -10,19 +10,18 @@ var go = (function(){
 
 		async.eachSeries(result,function(user,callback){
 			console.log(user);
-			callback();
-					/*
+
 			client.get(user,function(err,userData){
 				var parsed = JSON.parse(userData);
 				console.log('user: '+parsed.name)
 				db.users.insert(parsed);
 
 				client.keys("items:"+parsed.name+"*",function(err,itemMonths){
-					async.series(itemMonths,function(thisMonth,callbacki){
+					async.eachSeries(itemMonths,function(thisMonth,callbacki){
 						client.smembers(thisMonth,function(err,month){
 							var parsedi = JSON.parse(month);
 
-							async.series(parsedi,function(item,callbackii){
+							async.eachSeries(parsedi,function(item,callbackii){
 								console.log('item: '+parsedi.desc)
 								db.items.insert({
 									owner: userDate.name,
@@ -47,7 +46,6 @@ var go = (function(){
 				})
 				callback(null)
 			})
-			*/
 		},function(){
 			console.log('script completed')
 			process.exit();
