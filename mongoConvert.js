@@ -17,7 +17,7 @@ var databaseUrl = "tinybudget"
 						db.users.insert(parsed);
 						callbacki()
 					})
-				},callback(null))
+				},function(){callback(null)})
 			})
 		},
 		function(callback){
