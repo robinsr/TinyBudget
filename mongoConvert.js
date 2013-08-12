@@ -36,7 +36,7 @@ var databaseUrl = "tinybudget"
 								day: item.dat,
 								month: item.month,
 								year: item.month,
-								query_short: item.year + obj.month,
+								query_short: item.year + item.month,
 							    cat: item.cat,
 							    flagged: item.flagged ? item.flagged : false,
 							    comment: item.comment ? item.comment : '',
