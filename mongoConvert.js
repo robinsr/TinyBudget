@@ -24,11 +24,11 @@ var databaseUrl = "tinybudget"
 			client.keys("items:*",function(err,itemMonths){
 				async.eachSeries(itemMonths,function(thisMonth,callbacki){
 					console.log(thisMonth);
-					client.smembers(thisMonth,function(err,month){
-						var parsedi = JSON.parse(month);
-						console.log(parsedi);
+					client.smembers(thisMonth,function(err,thisMonthsItems){
 
-						async.eachSeries(parsedi,function(item,callbackii){
+
+						async.eachSeries(thisMonthsItems,function(itemUnP,callbackii){
+							var item = JSON.parse(itemUnP);
 							console.log('item: '+parsedi.desc)
 							db.items.insert({
 								owner: userDate.name,
