@@ -7,6 +7,8 @@ var databaseUrl = "tinybudget"
 
 var go = (function(){
 	client.keys("user:*",function(err,result){
+		console.log(result);
+		/*
 		async.series(result,function(user,callback){
 			client.get(user,function(err,userData){
 				var parsed = JSON.parse(userData);
@@ -46,5 +48,6 @@ var go = (function(){
 		},function(){
 			console.log('script completed')
 		})
+*/
 	})
 })();
