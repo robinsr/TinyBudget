@@ -18,11 +18,12 @@ var databaseUrl = "tinybudget"
 
 				client.keys("items:"+parsed.name+"*",function(err,itemMonths){
 					async.eachSeries(itemMonths,function(thisMonth,callbacki){
-						client.smembers(thisMonth,function(err,month){
+						console.log(thisMonth);
+						/*client.smembers(thisMonth,function(err,month){
 							var parsedi = JSON.parse(month);
 							console.log(parsedi);
 
-							/*async.eachSeries(parsedi,function(item,callbackii){
+							async.eachSeries(parsedi,function(item,callbackii){
 								console.log('item: '+parsedi.desc)
 								db.items.insert({
 									owner: userDate.name,
@@ -41,8 +42,8 @@ var databaseUrl = "tinybudget"
 								})
 							},function(){
 								callbacki(null);
-							})*/
-						})
+							})
+						})*/
 					},function(){
 						callback(null)
 					})
