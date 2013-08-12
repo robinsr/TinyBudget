@@ -13,7 +13,9 @@ var databaseUrl = "tinybudget"
 					console.log(user);
 					client.get(user,function(err,userData){
 						var parsed = JSON.parse(userData);
-						console.log('user: '+parsed.name)
+						parsed.user = parsed.name;
+						delete parsed.name;
+						console.log('user: '+parsed.user)
 						db.users.insert(parsed);
 						callbacki()
 					})
