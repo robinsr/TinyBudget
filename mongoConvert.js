@@ -10,14 +10,16 @@ var go = (function(){
 		async.each(result,function(user,callback){
 			client.get(user,function(err,userData){
 				var parsed = JSON.parse(userData);
+				console.log('user: '+parsed.name)
 				db.users.insert(parsed);
 
 				client.keys("items:"+parsed.name+"*",function(err,itemMonths){
-					async.each(itemMonths,function(thisMonth){
+					async.each(itemMonths,function(thisMonth,callbacki){
 						client.smembers(thisMonth,function(err,month){
 							var parsedi = JSON.parse(month);
 
-							async.each(parsedi,function(item){
+							async.each(parsedi,function(item,callbackii){
+								console.log('item: '+parsedi.desc)
 								db.items.insert({
 									owner: userDate.name,
 									day: item.dat,
@@ -30,13 +32,19 @@ var go = (function(){
 								    amount: item.amount,
 								    desc: item.desc,
 								    itemid: item.itemid
+								},function(){
+									callbackii(null);
 								})
 							})
 						})
+					},function(){
+						callbacki(null)
 					})
 				})
 				callback(null)
 			})
+		},function(){
+			console.log('script completed')
 		}
 	})
 })();
