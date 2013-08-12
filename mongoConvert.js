@@ -21,7 +21,7 @@ var databaseUrl = "tinybudget"
 			})
 		},
 		function(callback){
-			client.keys("items:"+parsed.name+"*",function(err,itemMonths){
+			client.keys("items:*",function(err,itemMonths){
 				async.eachSeries(itemMonths,function(thisMonth,callbacki){
 					console.log(thisMonth);
 					client.smembers(thisMonth,function(err,month){
