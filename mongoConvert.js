@@ -10,6 +10,7 @@ var go = (function(){
 
 		async.eachSeries(result,function(user,callback){
 			console.log(user);
+			callback();
 					/*
 			client.get(user,function(err,userData){
 				var parsed = JSON.parse(userData);
