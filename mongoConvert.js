@@ -5,7 +5,7 @@ var databaseUrl = "tinybudget"
   , redis = require('redis')
   , client = redis.createClient();
 
-var go = (function(){
+(function(){
 	client.keys("user:*",function(err,allUsers){
 
 		async.eachSeries(allUsers,function(user,callback){
@@ -49,6 +49,5 @@ var go = (function(){
 			console.log('script completed')
 			process.exit();
 		})
-
 	})
 })();
