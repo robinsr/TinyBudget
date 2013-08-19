@@ -38,11 +38,11 @@ var databaseUrl = "tinybudget"
 								day: item.dat,
 								month: item.month,
 								year: item.month,
-								query_short: item.year + item.month,
+								query_short: (parseInt(item.year * 100)) + parseInt(item.month),
 							    cat: item.cat,
 							    flagged: item.flagged ? item.flagged : false,
 							    comment: item.comment ? item.comment : '',
-							    amount: item.amount,
+							    amount: parseFloat(item.amt).toFixed(2),
 							    desc: item.desc,
 							    itemid: item.itemid
 							},function(){callbackii(null)})

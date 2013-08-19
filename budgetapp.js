@@ -145,19 +145,21 @@ function getInit(req, res, query) {
                 });
             },
             function(cb){
-                var query_upper_bound = todays_date.year + todays_date.month;
-                var query_lower_bound = todays_date.two_month_back_yr + todays_date.two_month_back;
+                var query_upper_bound = (todays_date.year * 100) + todays_date.month;
+                var query_lower_bound = (todays_date.two_month_back_yr * 100) + todays_date.two_month_back;
 
-                db.items.find({user: query.name, query_short: {$gte : query_lower_bound, $lte: query_upper_bound}},function(err,monthItemIds){
+                console.log(query_upper_bound,query_lower_bound);
+
+                db.items.find({owner: query.name, query_short: {$gte : query_lower_bound, $lte: query_upper_bound}},function(err,itemIds){
                     if (err) {
                         cb('error!')
                     } else {
-                        async.each(monthItemIds,function(monthItemId,cbb){
-                            db.findOne({_id:monthItemId},function(monthItem){
-                                monthItem.items.forEach(function(item){
-                                    return_ob.items.push(item);
-                                    cbb(null);
-                                })
+                        console.log('getting items')
+                        async.each(itemIds,function(itemid,cbb){
+                            console.log('finding '+itemid.itemid);
+                            db.items.findOne({itemid:itemid.itemid},function(err,thisItem){
+                                return_ob.items.push(thisItem)
+                                cbb(null);
                             })
                         },function(err){
                             if (err) {
