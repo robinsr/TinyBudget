@@ -353,7 +353,10 @@ is_ie = true;
         <span data-bind="if: unusedCategories().length > 0">
         <p id="tour_unused_categories">This month has items with these categories:</p>
         <ul data-bind="foreach: unusedCategories">
-          <li class="categorylist" data-bind="text: name"></li>
+          <li class="categorylist" data-bind="click: $root.addCategory">
+                <!--ko text:$data--><!--/ko-->
+                <i class='icon-float icon-plus'></i> 
+          </li>
         </ul>
         </span>
       </div>
