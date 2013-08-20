@@ -26,19 +26,25 @@ var mimeType = {
     '': 'text/html'
 };
 
-function itemMonth(obj){
-    this.month = obj.month;
-    this.year = obj.year;
-    this.query_short = obj.year + obj.month;
-    this.items = [];
-}
 function item(obj){
     this.cat = obj.cat;
-    this.flagged = obj.flagged;
+    this.isflagged = obj.isflagged;
     this.comment = obj.comment;
-    this.amount = obj.amount;
+    this.amt = obj.amt;
     this.desc = obj.desc;
     this.itemid = obj.itemid;
+    this.day = parseInt(obj.day);
+    this.month = parseInt(obj.month);
+    this.year = parseInt(obj.year);
+    this.query_short = (parseInt(obj.year * 100)) + parseInt(obj.month),
+    this.owner = obj.name;
+}
+function delItem(obj){
+    this.itemid = obj.itemid;
+    this.day = parseInt(obj.day);
+    this.month = parseInt(obj.month);
+    this.year = parseInt(obj.year);
+    this.owner = obj.name;
 }
 var todays_date = {}
 
@@ -105,16 +111,29 @@ function getMonth(req, res, query) {
             respondInsufficient(req, res, "failed auth at getMonth");
             return;
         } else {
-            db.items.findOne({user: query.name, year: query.year, month: query.month},{items:1},function(err, r){
+            var return_ob = []
+            db.items.find({owner: query.name, year: query.year, month: query.month},function(err,itemIds){
                 if (err) {
                     res.writeHead(500, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({}));
-                } else if (r == null || r.items.length == 0){
-                    res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({}));
                 } else {
-                    res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({items: r.items}));
+                    console.log(itemIds);
+                    console.log('getting items')
+                    async.each(itemIds,function(itemid,cbb){
+                        console.log('finding '+itemid.itemid);
+                        db.items.findOne({itemid:itemid.itemid},function(err,thisItem){
+                            return_ob.push(thisItem)
+                            cbb(null);
+                        })
+                    },function(err){
+                        if (err) {
+                            res.writeHead(500, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({}));
+                        } else {
+                            res.writeHead(200, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({items: return_ob}));
+                        }
+                    })
                 }
             })
         }
@@ -229,9 +248,8 @@ function deleteItem(req, res, query) {
             respondInsufficient(req, res, "failed auth at deleteItem");
             return;
         } else {
-            var query = {user: query.name, year: query.year, month: query.month};
-            var modify = {$pull:{items:{itemid:query.itemid}}}
-            db.items.findAndUpdate(query,modify,function(err,r){
+            var newDelItem = new delItem(query);
+            db.items.remove(newDelItem,function(err,r){
                 if (err) {
                     res.writeHead(500, { 'Content-Type': 'text/plain' });
                     res.end('Error removing');
@@ -318,25 +336,26 @@ function addItem(req, res, query) {
             return
         } else {
             console.log(query);
-            var newItem = new item({
-                    cat : query.cat,
-                    flagged : query.isflagged ? query.isflagged : false,
-                    comment : query.comment ? query.comment : '',
-                    amount : query.amount,
-                    desc : query.desc,
-                    itemid : query.itemid
-            });
+            // var newItem = new item({
+            //         cat : query.cat,
+            //         flagged : query.isflagged ? query.isflagged : false,
+            //         comment : query.comment ? query.comment : '',
+            //         amount : query.amount,
+            //         desc : query.desc,
+            //         itemid : query.itemid
+            // });
+            var newItem = new item(query);
 
-            db.items.findAndModify({user: query.name, year: query.year, month: query.month},
-                {$addToSet:{items:newItem}},
-                function(err,result){
+            console.log(newItem);
+
+            db.items.insert(newItem, function(err,result){
                 if (err) {
                     res.writeHead(500, { 'Content-Type': 'text/plain' });
                     res.end('Error adding item');
                     return
                 } else {
                     res.writeHead(200, { 'Content-Type': 'text/plain' });
-                    res.end('Item Added: ' + itemid);
+                    res.end('Item Added: ' + newItem.itemid);
                     return
                 }
             })
@@ -431,13 +450,11 @@ function changeEmail(req,res,q){
             respondInsufficient(req, res, "failed auth at changePass");
             return
         } else {
-            db.users.findAndModify({
-                query: {user:query.name},
-                update: {
-                    $set: { email: query.email }
-                },
-                new: true,
-            },function(er,result){
+            var args = {
+                'query': {user:query.name},
+                'update': {$set: { email: query.email }}
+            }
+            db.users.findAndModify(args, function(er,result){
                 if (er){
                     res.writeHead(500, { 'Content-Type': 'text/plain' });
                     res.end('Server Error');
@@ -471,13 +488,11 @@ function changePass(req, res, q) {
                     var hashCheck = crypto.createHash('md5').update(combined).digest('hex');
                     if (hashCheck == result.pass){
                         newPass = crypto.createHash('md5').update(q.newPass+user.salt).digest('hex');
-                        db.users.findAndModify({
-                            query: {user:query.name},
-                            update: {
-                                $set: { pass: newPass }
-                            },
-                            new: true,
-                        },function(er,result){
+                        var args = {
+                            'query': {user:query.name},
+                            'update': {$set: { pass: newPass }}
+                        }
+                        db.users.findAndModify(args,function(er,result){
                             if (er){
                                 res.writeHead(500, { 'Content-Type': 'text/plain' });
                                 res.end('Server Error');
