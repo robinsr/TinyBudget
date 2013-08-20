@@ -16,7 +16,7 @@ var databaseUrl = "tinybudget"
 					client.smembers(user,function(err,userData){
 						async.eachSeries(userData,function(cat){
 							console.log(cat);
-							db.users.update({user:owner},{$push: {categories: cat}});
+							db.users.update({user:owner},{$set: {categories: cat}});
 							callbacki()
 						})
 					})
