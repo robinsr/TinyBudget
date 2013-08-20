@@ -19,7 +19,7 @@ var getInit = (function(){
                     tinybudget.viewmodel.date = JSON.parse(JSON.stringify(datai.date));
                     tinybudget.viewmodel.currentyear(tinybudget.viewmodel.date.year);
                     tinybudget.viewmodel.currentmonth(tinybudget.viewmodel.date.month);
-                    //console.log(datai)
+                    console.log(datai)
                     tinybudget.viewmodel.user.categories = JSON.parse(JSON.stringify(datai.categories));
                     
                     if (tinybudget.viewmodel.user.categories.length == 0) {
@@ -43,6 +43,7 @@ var getInit = (function(){
                             if (progress % 10 == 0){
                                 tinybudget.viewmodel.getInitLoadBarProgress(progress);
                             }
+                            console.log(datai.items[count])
                             tinybudget.viewmodel.userItems.push(new rowitem(true, datai.items[count].desc, datai.items[count].amt, datai.items[count].year + "/" + datai.items[count].month + "/" + datai.items[count].day, datai.items[count].cat, datai.items[count].itemid, (datai.items[count].isflagged=="true"), datai.items[count].comment));
                             
                                     // length minus 2 is important! it allows the regular subscribed function to render the high chart

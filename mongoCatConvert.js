@@ -14,11 +14,13 @@ var databaseUrl = "tinybudget"
 					var owner = user.replace(/[a-z]*:/,'');
 					console.log(owner);
 					client.smembers(user,function(err,userData){
-						async.eachSeries(userData,function(cat){
+						async.eachSeries(userData,function(cat,callbackii){
 							console.log(cat);
-							db.users.update({user:owner},{$set: {categories: cat}});
-							callbacki()
-						})
+							db.users.update({user:owner},{$push: {categories: cat}},function(){
+								callbackii();
+							});
+							
+						},function(){callbacki()})
 					})
 				},function(){callback(null)})
 			})

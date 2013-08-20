@@ -311,11 +311,13 @@ function addMultipleItems(req,res,query){
  */
 
 function addItem(req, res, query) {
+
     validateSession(query.name, query.sess, function (ex) {
         if (!ex) {
             respondInsufficient(req, res, "failed auth at addItem");
             return
         } else {
+            console.log(query);
             var newItem = new item({
                     cat : query.cat,
                     flagged : query.isflagged ? query.isflagged : false,
@@ -325,10 +327,9 @@ function addItem(req, res, query) {
                     itemid : query.itemid
             });
 
-            var query = {user: query.name, year: query.year, month: query.month};
-            var modify = {$addToSet:{items:newItem}}
-
-            db.items.findAndModify(query,modify,function(err,result){
+            db.items.findAndModify({user: query.name, year: query.year, month: query.month},
+                {$addToSet:{items:newItem}},
+                function(err,result){
                 if (err) {
                     res.writeHead(500, { 'Content-Type': 'text/plain' });
                     res.end('Error adding item');
