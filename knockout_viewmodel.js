@@ -606,24 +606,33 @@ function AppViewModel() {
 
         // adds a category to the model
     self.addCategory = function (data) {
-        if (self.addCatValue().length > 0) {
-            if (self.addCatValue().length <= 32) {
-                if (self.addCatValue().toLowerCase() !== 'payday'){
-                    self.userCategories.push(self.addCatValue());
-                    self.categoryFeedback('');
-                    self.addCatValue('');
-                    self.categoryValidateState('');
+        if (!data) {
+            if (self.addCatValue().length > 0) {
+                if (self.addCatValue().length <= 32) {
+                    if (self.addCatValue().toLowerCase() !== 'payday'){
+                        self.userCategories.push(self.addCatValue());
+                        self.categoryFeedback('');
+                        self.addCatValue('');
+                        self.categoryValidateState('');
+                    } else {
+                        self.categoryValidateState('error');
+                        self.categoryFeedback('Payday is reserved for income!');
+                    }
                 } else {
                     self.categoryValidateState('error');
-                    self.categoryFeedback('Payday is reserved for income!');
+                    self.categoryFeedback('32 character limit');
                 }
             } else {
                 self.categoryValidateState('error');
-                self.categoryFeedback('32 character limit');
+                self.categoryFeedback('');
             }
         } else {
-            self.categoryValidateState('error');
-            self.categoryFeedback('');
+            self.userCategories.push(data);
+            var match = ko.arrayFirst(self.unusedCategories(),function(cat){
+                console.log(cat);
+                return (cat == data);
+            })
+            console.log(match)
         }
     }
 
