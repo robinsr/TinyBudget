@@ -9,7 +9,8 @@ var app = require('http').createServer(handler)
   , qs = require('qs')
   , util = require('util')
   , moment = require('moment')
-  , async = require('async');
+  , async = require('async')
+  , stats = require('./stats');
 
 var mimeType = {
     '.js': 'text/javascript',
@@ -101,7 +102,24 @@ function validateSession(n, s, cb) {
     }
 }
 
-
+function getCategoryTotals(req, res, query){
+    validateSession(query.name, query.sess, function (val) {
+        if (!val) {
+            respondInsufficient(req, res, "failed auth at getCategoryTotals");
+            return;
+        } else {
+            stats.categoryTotals(query,function(err,result){
+                if (err) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({}));
+                } else {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify(result));
+                }
+            })
+        }
+    });
+}
 function getMonth(req, res, query) {
     validateSession(query.name, query.sess, function (val) {
         if (!val) {
@@ -685,6 +703,13 @@ function handler(req, res) {
                     return;
                 } else {
                     respondInsufficient(req, res, 'Requires name, session, year, and month');
+                }
+            } else if (p == 'getCategoryTotals') {
+                if (q.name && q.sess) {
+                    getCategoryTotals(req, res, q);
+                    return;
+                } else {
+                    respondInsufficient(req, res, 'Requires name, session');
                 }
             } else {
                 serveStatic(req, res);
