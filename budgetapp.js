@@ -39,6 +39,7 @@ function item(obj){
     this.query_short = (parseInt(obj.year * 100)) + parseInt(obj.month),
     this.owner = obj.name;
 }
+
 function delItem(obj){
     this.itemid = obj.itemid;
     this.day = parseInt(obj.day);
@@ -46,11 +47,7 @@ function delItem(obj){
     this.year = parseInt(obj.year);
     this.owner = obj.name;
 }
-var todays_date = {}
 
-    // some really weird stuff happens here arount the 30th and 31st of some months
-    // date object results in month: 5, one_month_back: 5, two_month_back: 3. 5, 5, and 3????
-    // moved to moment.js to see if dates are more consistent
 function setTodaysDate() {    
     todays_date = {
         year: moment().year(),
@@ -278,55 +275,50 @@ function checkQueryItemId(query, cb) {
     }
 }
 
- /*
-  * 
 function addMultipleItems(req,res,query){
-  console.log('called mutli')
-  validateSession(query.name,query.sess,function(ex){
-    if (!ex){
-      respondInsufficient(req,res,"failed auth at addMultipleItems")
-      return;
-    } else {
-      console.log('passed session check')
-      var blob = '';
-      req.on('data',function(chunk){
-        console.log('data' +chunk.toString())
-        blob += chunk;
-      })
-      req.on('end',function(){
-        console.log('request ended');
-        var response = '';
-        var responseCode = 200;
-        var items = JSON.parse(blob);
-        var count = 0
-        
-        function addThisItem(){
-          console.log('adding item')
-          var thisItem = items[count]
-          var rediskey = "items:" + query.name + ":" + thisItem.year + ":" + thisItem.month;
-          client.sadd(redisKey,JSON.stringify(item),function(err){
-            if (err) {
-              console.log('error adding to redis')
-              response += 'Error adding '+thisItem.itemID+"\n";
-              responseCode = 500;
-            }
-            if (count >= items.length-1){
-              res.writeHead(responseCode);
-              res.end(response);
-            } else {
-              count++
-              addThisItem();
-            }
-          })
-        }
-        addThisItem();
-        console.log('went too far');
-      });
-    }
-  });
+	validateSession(query.name,query.sess,function(ex){
+		if (!ex){
+			respondInsufficient(req,res,"failed auth at addMultipleItems")
+			return;
+		} else {
+			var blob = '';
+			req.on('data',function(chunk){
+				blob += chunk;
+			})
+			req.on('end',function(){
+				var newItems = JSON.parse(blob);
+				var rejectedItems = [];
+				async.eachSeries(newItems,function(newItem,callback){
+					newItem.isflagged = false;
+					newItem.comment = '';
+					newItem.name = query.name;
+					var newItemObj = new item(newItem);
+					console.log(newItemObj)
+					db.items.insert(newItemObj,function(err,r){
+		                if (err) {
+		                	rejectedItems.push(newItemObj);
+		                    callback(1);
+		                } else {
+		                    callback(null)
+		                }
+		            })
+				},function(err){
+					if (err) {
+	                    res.writeHead(500, { 'Content-Type': 'application/json' });
+	                    res.end(JSON.stringify({rejected_items: rejectedItems}));
+	                    return
+	                } else {
+	                    res.writeHead(200, { 'Content-Type': 'text/plain' });
+	                    res.end('Items Added Successfully');
+	                    return
+	                }
+				})
+			res.writeHead(200);
+			res.end();
+			});
+		}
+	});
 }
- *
- */
 
 function addItem(req, res, query) {
 
@@ -335,19 +327,8 @@ function addItem(req, res, query) {
             respondInsufficient(req, res, "failed auth at addItem");
             return
         } else {
-            console.log(query);
-            // var newItem = new item({
-            //         cat : query.cat,
-            //         flagged : query.isflagged ? query.isflagged : false,
-            //         comment : query.comment ? query.comment : '',
-            //         amount : query.amount,
-            //         desc : query.desc,
-            //         itemid : query.itemid
-            // });
             var newItem = new item(query);
-
             console.log(newItem);
-
             db.items.insert(newItem, function(err,result){
                 if (err) {
                     res.writeHead(500, { 'Content-Type': 'text/plain' });
@@ -465,10 +446,6 @@ function changeEmail(req,res,q){
             })
         }
     })
-}
-function isHash(hash,cb){
-    var p = /[0-9a-f]{32}/;
-    cb(p.test(hash))
 }
 function changePass(req, res, q) {
     validateSession(q.name, q.sess, function (ex) {
