@@ -35,9 +35,9 @@ var databaseUrl = "tinybudget"
 							var owner = owner.replace(/\:[0-9]*:[0-9]*/,'');
 							db.items.insert({
 								owner: owner,
-								day: item.day,
-								month: item.month,
-								year: item.year,
+								day: parseInt(item.day),
+								month: parseInt(item.month),
+								year: parseInt(item.year),
 								query_short: (parseInt(item.year * 100)) + parseInt(item.month),
 							    cat: item.cat,
 							    isflagged: item.flagged ? item.flagged : false,
