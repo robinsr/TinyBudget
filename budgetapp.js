@@ -30,7 +30,7 @@ function item(obj){
     this.cat = obj.cat;
     this.isflagged = obj.isflagged;
     this.comment = obj.comment;
-    this.amt = obj.amt;
+    this.amt = parseFloat(obj.amt).toFixed(2) * 100;
     this.desc = obj.desc;
     this.itemid = obj.itemid;
     this.day = parseInt(obj.day);
@@ -119,6 +119,7 @@ function getMonth(req, res, query) {
                     async.each(itemIds,function(itemid,cbb){
                         console.log('finding '+itemid.itemid);
                         db.items.findOne({itemid:itemid.itemid},function(err,thisItem){
+                            thisItem.amt = (thisItem.amt/100).toFixed(2);
                             return_ob.push(thisItem)
                             cbb(null);
                         })
@@ -174,6 +175,7 @@ function getInit(req, res, query) {
                         async.each(itemIds,function(itemid,cbb){
                             console.log('finding '+itemid.itemid);
                             db.items.findOne({itemid:itemid.itemid},function(err,thisItem){
+                                thisItem.amt = (thisItem.amt/100).toFixed(2);
                                 return_ob.items.push(thisItem)
                                 cbb(null);
                             })

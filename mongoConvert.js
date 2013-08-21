@@ -42,7 +42,7 @@ var databaseUrl = "tinybudget"
 							    cat: item.cat,
 							    isflagged: item.flagged ? item.flagged : false,
 							    comment: item.comment ? item.comment : '',
-							    amt: parseFloat(item.amt).toFixed(2),
+							    amt: parseFloat(item.amt).toFixed(2) * 100,
 							    desc: item.desc,
 							    itemid: item.itemid
 							},function(){callbackii(null)})
