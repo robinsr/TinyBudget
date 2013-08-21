@@ -476,6 +476,7 @@ function changePass(req, res, q) {
             respondInsufficient(req, res, "failed auth at changePass");
             return
         } else {
+
             db.users.findOne({user:q.name},function(er,result){
                 if (er){
                     res.writeHead(500, { 'Content-Type': 'text/plain' });
@@ -487,7 +488,7 @@ function changePass(req, res, q) {
                     var combined = q.oldPass + result.salt;
                     var hashCheck = crypto.createHash('md5').update(combined).digest('hex');
                     if (hashCheck == result.pass){
-                        newPass = crypto.createHash('md5').update(q.newPass+user.salt).digest('hex');
+                        newPass = crypto.createHash('md5').update(q.newPass+result.salt).digest('hex');
                         var args = {
                             'query': {user:q.name},
                             'update': {$set: { pass: newPass }}
