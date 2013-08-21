@@ -296,7 +296,12 @@ function addMultipleItems(req,res,query){
 					newItem.name = query.name;
 					var newItemObj = new item(newItem);
 					console.log(newItemObj)
-					db.items.insert(newItemObj,function(err,r){
+                    args = {
+                        'query': {itemid: newItemObj.itemid},
+                        'update': newItemObj,
+                        'upsert':true
+                    }
+					db.items.findAndModify(args,function(err,r){
 		                if (err) {
 		                	rejectedItems.push(newItemObj);
 		                    callback(1);
@@ -331,7 +336,12 @@ function addItem(req, res, query) {
         } else {
             var newItem = new item(query);
             console.log(newItem);
-            db.items.insert(newItem, function(err,result){
+            args = {
+                'query': {itemid: newItem.itemid},
+                'update': newItem,
+                'upsert':true
+            }
+            db.items.findAndModify(args, function(err,result){
                 if (err) {
                     res.writeHead(500, { 'Content-Type': 'text/plain' });
                     res.end('Error adding item');
