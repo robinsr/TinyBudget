@@ -1,5 +1,5 @@
 var CSVFileReader = (function(){
-	var replace_string = "POS Withdrawal ";
+	var replace_string = "POS Withdrawal - ";
 	function parseCSV(data){
 		var parsed;
 		var lines = data.replace(/\"/g,"");
@@ -113,9 +113,7 @@ var CSVFileReader = (function(){
       } else if (thisLine[docData.creditIndex].length > 1){
       	thisItem.amt = thisLine[docData.creditIndex].replace("-","");
       	thisItem.cat = "payday";
-      } else {
-          console.log("skipping item",thisLine);
-        }
+      }
 
         // var checkCat = tinybudget.viewmodel.checkCategory();
         // console.log(checkCat);
