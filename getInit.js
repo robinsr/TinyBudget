@@ -43,20 +43,13 @@ var getInit = (function(){
                             if (progress % 10 == 0){
                                 tinybudget.viewmodel.getInitLoadBarProgress(progress);
                             }
-                            console.log(datai.items[count])
-                            tinybudget.viewmodel.userItems.push(new rowitem(true, datai.items[count].desc, datai.items[count].amt, datai.items[count].year + "/" + datai.items[count].month + "/" + datai.items[count].day, datai.items[count].cat, datai.items[count].itemid, (datai.items[count].isflagged=="true"), datai.items[count].comment));
-                            
-                                    // length minus 2 is important! it allows the regular subscribed function to render the high chart
-                                    // on the last item. if it was minus 1 then the subscribed funtion wouldn't run since all items are loaded.
-                                    // One more item remains to be loaded therefore we dont return the block right here.
-                            if (count == datai.items.length - 2) {
-                                //console.log('loadstatus2 at run');
-                                tinybudget.viewmodel.loadstatus(2);
-                            }
-                            
+                            tinybudget.viewmodel.userItems.push(new rowitem(true, datai.items[count].desc, datai.items[count].amt, datai.items[count].year + "/" + datai.items[count].month + "/" + datai.items[count].day, datai.items[count].cat, datai.items[count].itemid, (datai.items[count].isflagged=="true"), datai.items[count].comment));                           
                             count++;
                             
                             if (count >= datai.items.length){
+                                tinybudget.viewmodel.renderChart();
+                                tinybudget.viewmodel.loadstatus(2);
+                                tinybudget.viewmodel.getInitLoadBarProgress(0);
                                 return;
                             } else {
                                 setTimeout(run,0);
