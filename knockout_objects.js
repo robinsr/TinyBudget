@@ -90,6 +90,16 @@ function categoryTotal(name, amount) {
     self.amount = amount;
 }
 
+    // object representing total items, average cost, average day -- seems redundant
+function statCategoryTotal(name, amount, items, avg, day) {
+    var self = this;
+    self.name = name;
+    self.amount = amount;
+    self.items = items;
+    self.average = avg;
+    self.likely_day = day;
+}
+
     // object representing a UI message for various feedback to the user
 function UImessage(message,level) {
     var self = this;
