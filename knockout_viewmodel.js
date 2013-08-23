@@ -3,26 +3,7 @@
     // the main viewmodel for this app
 function AppViewModel() {
     var self = this; 
-    /*var setDate = function(){
-        var d = new Date();
-        var e = new Date();
-        var f = new Date();
-        with(e){
-            setMonth(getMonth()-1);
-        }
-        with(f){
-            setMonth(getMonth()-2);
-        }
-        return todays_date = {
-            year: d.getFullYear(),
-            day: d.getDate(),
-            month: d.getMonth()+1,
-            one_month_back: e.getMonth()+1,
-            one_month_back_yr: e.getFullYear(),
-            two_month_back: f.getMonth()+1,
-            two_month_back_yr: f.getFullYear()
-        }
-    }*/
+
     self.date;
     self.currentyear = ko.observable();
     self.currentmonth = ko.observable();
@@ -68,6 +49,13 @@ function AppViewModel() {
     self.onTour = ko.observable(0);// 0 not onTour; 1 User Tour; 2 Tech Tour    
     self.editableItem = ko.observable();
     self.canCSV = ko.observable(false);
+    self.statsCategory = ko.observableArray([])
+
+    if (is_ie){
+        self.desc("Description");
+        self.amt("Amount");
+        self.input_date("Date");
+    }
 
     if (window.File && window.FileReader && window.FileList && window.Blob) {
         self.canCSV(true);
@@ -110,6 +98,7 @@ function AppViewModel() {
         if (!match) {
             //console.log('need data for: '+monthCheck)
             server.fetchMonth(self.currentmonth(),self.currentyear())
+
         }
     }
     
@@ -177,9 +166,7 @@ function AppViewModel() {
                                                     self.input_error("");
                                                     var cat = self.expenseOrPaydayActive() == 'payday' ? 'payday' : self.cat();
                                                     self.userItems.push(new rowitem(false, self.desc(), parsed_input, self.input_date(), cat));
-                                                    self.desc("");
-                                                    self.amt("");
-                                                    self.input_date("");
+                                                    self.resetInputs();
                                                     document.forms.input_form.desc.focus();
                                                     self.inputFeedback('Item Added Successfully')
                                                     setTimeout(function () {
@@ -249,6 +236,17 @@ function AppViewModel() {
         } 
         self.inputFeedback(message[type]);
     }
+    self.resetInputs = function(){
+        if (is_ie){
+            self.desc("Description");
+            self.amt("Amount");
+            self.input_date("Date");
+        } else {
+            self.desc("");
+            self.amt("");
+            self.input_date("");
+        }
+    }
 
         // removes item from knockout observable array userItems
     self.removeItem = function (item) {
@@ -259,18 +257,8 @@ function AppViewModel() {
         // was added or removed from the array and then provices an add and remove callback
     self.userItems.subscribeArrayChanged(
         function(item){server.addItemToServer(item)
-        //     try{
-        //         var t = server.addItemToServer(item)
-        //     } catch (ex){
-        //         console.log(ex.name,ex.message);
-        //     }
         },
         function(item){server.removeItemFromServer(item)
-            // try{
-            //     server.removeItemFromServer(item)
-            // } catch (ex){
-            //     console.log(ex.name,ex.message);
-            // }
         } 
     );
     
@@ -629,10 +617,8 @@ function AppViewModel() {
         } else {
             self.userCategories.push(data);
             var match = ko.arrayFirst(self.unusedCategories(),function(cat){
-                console.log(cat);
                 return (cat == data);
             })
-            console.log(match)
         }
     }
 
@@ -716,7 +702,23 @@ function AppViewModel() {
         return "width: " + self.csvLoadBarProgress()  + "%";
     });
 
-    
+    self.stats = function(){
+        self.modalStatus('stats');
+        tinybudgetutils.issue('getCategoryTotals', [
+            ['name', self.user.name],
+            ['sess', self.user.sess],
+            ['year', self.currentyear()]
+        ], null, function (err, stat, data) {
+            if (err) {
+                console.log('error getting cat totals')
+            } else {
+                self.statsCategory.removeAll();
+                $(JSON.parse(data)).each(function(index,item){
+                    self.statsCategory.push(new statCategoryTotal(item.cat,item.amt,item.items,item.avg,item.likely_day))
+                })
+            }
+        });
+    }
     // login function, loads user items and categories from server and pushes to obversvable arrays    
     self.login = function (newuser_name, newuser_pass,cb) {
         newuser_name ? self.user.name = newuser_name : self.user.name = self.uname();
@@ -877,5 +879,59 @@ function AppViewModel() {
         }
     }
 
+    // ================ STATS SECTION ================
+
+    this.costlyCategory = ko.observable();
+    this.costlyCategoryPerItem = ko.observable();
+    this.mostCategory = ko.observable();
+    this.mostCategoryPerItem = ko.observable();
+    this.lifeCost = ko.observable();
+    this.lifeIncome = ko.observable();
+    this.netWorth = ko.observable();
+    this.netWorthSign = ko.computed(function(){
+        var number = self.netWorth();
+        var sign = number?number<0?'-':'':'';
+        return sign;
+    });
+
+    self.stats = function(){
+        self.modalStatus('stats');
+        tinybudgetutils.issue('getCategoryTotals', [
+            ['name', self.user.name],
+            ['sess', self.user.sess],
+            ['year', self.currentyear()]
+        ], null, function (err, stat, data) {
+            if (err) {
+            } else {
+                self.statsCategory.removeAll();
+                $(JSON.parse(data)).each(function(index,item){
+                    self.statsCategory.push(new statCategoryTotal(item.cat,item.amt,item.items,item.avg,item.likely_day))
+                })
+            }
+        });
+        tinybudgetutils.issue('getIncomePerDay', [
+            ['name', self.user.name],
+            ['sess', self.user.sess],
+            ['year', self.currentyear()],
+            ['month', self.currentmonth()]
+        ], null, function (err, stat, data) {
+            if (err) {
+            } else {
+                self.statsCategory.removeAll();
+                var datai = JSON.parse(data)
+
+                self.lifeCost(parseFloat(datai.calculations.expensePerDay/100).toFixed(2));
+                self.lifeIncome(parseFloat(datai.calculations.payPerDay/100).toFixed(2));
+                self.netWorth(parseFloat(Math.abs(datai.calculations.netPerDay)/100).toFixed(2));
+            }
+        });
+
+
+    }
+
+
+
 }
-var tinybudget = { viewmodel: new AppViewModel()};
+var tinybudget = { viewmodel: new AppViewModel() };
+
+
