@@ -90,6 +90,10 @@ height: 40px;
   margin: 0 auto 0 auto;
   width: 220px;
 }
+.wide-modal {
+  width:760px;
+  margin-left: -380px;
+}
 .month-select {
   text-align:center;
   margin-left: 20px;
@@ -125,10 +129,6 @@ height: 40px;
 }
 .categoryFeedback {
     color: #b10000;
-}
-#csv_modal {
-  width:760px;
-  margin-left: -380px;
 }
 .icon-cell {
   width:32px;
