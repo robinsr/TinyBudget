@@ -594,7 +594,7 @@ function AppViewModel() {
 
         // adds a category to the model
     self.addCategory = function (data) {
-        if (!data) {
+        if (typeof data !== 'string') {
             if (self.addCatValue().length > 0) {
                 if (self.addCatValue().length <= 32) {
                     if (self.addCatValue().toLowerCase() !== 'payday'){
