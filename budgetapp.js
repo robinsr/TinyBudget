@@ -120,6 +120,25 @@ function getCategoryTotals(req, res, query){
         }
     });
 }
+
+function getIncomePerDay(req, res, query){
+    validateSession(query.name, query.sess, function (val) {
+        if (!val) {
+            respondInsufficient(req, res, "failed auth at getIncomePerDay");
+            return;
+        } else {
+            stats.incomePerDay(query,function(err,result){
+                if (err) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({}));
+                } else {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify(result));
+                }
+            })
+        }
+    });
+}
 function getMonth(req, res, query) {
     validateSession(query.name, query.sess, function (val) {
         if (!val) {
@@ -127,16 +146,21 @@ function getMonth(req, res, query) {
             return;
         } else {
             var return_ob = []
-            db.items.find({owner: query.name, year: query.year, month: query.month},function(err,itemIds){
+            var args = {
+                owner:query.name,
+                year:parseInt(query.year),
+                month:parseInt(query.month)
+            }
+            db.items.find(args,function(err,pointers){
                 if (err) {
                     res.writeHead(500, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({}));
                 } else {
-                    console.log(itemIds);
+                    console.log(pointers);
                     console.log('getting items')
-                    async.each(itemIds,function(itemid,cbb){
-                        console.log('finding '+itemid.itemid);
-                        db.items.findOne({itemid:itemid.itemid},function(err,thisItem){
+                    async.each(pointers,function(thisPointer,cbb){
+                        console.log('finding '+thisPointer.itemid);
+                        db.items.findOne({itemid:thisPointer.itemid},function(err,thisItem){
                             thisItem.amt = (thisItem.amt/100).toFixed(2);
                             return_ob.push(thisItem)
                             cbb(null);
@@ -707,6 +731,13 @@ function handler(req, res) {
             } else if (p == 'getCategoryTotals') {
                 if (q.name && q.sess) {
                     getCategoryTotals(req, res, q);
+                    return;
+                } else {
+                    respondInsufficient(req, res, 'Requires name, session');
+                }
+            } else if (p == 'getIncomePerDay') {
+                if (q.name && q.sess) {
+                    getIncomePerDay(req, res, q);
                     return;
                 } else {
                     respondInsufficient(req, res, 'Requires name, session');
