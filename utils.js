@@ -19,26 +19,6 @@ $(function(){
 
 // ===========  Utils module =============
 var tinybudgetutils = (function(){
-    /*function ajaxFunction () {
-        var xmlhttp;
-        try {
-            xmlhttp = new XMLHttpRequest();
-        } catch (e) {
-            try {
-                xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
-            } catch (e) {
-                try {
-                    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-                } catch (e) {
-                    console.log('no ajax?');
-                    return false;
-                }
-            }
-            
-        }
-        return xmlhttp;
-    }*/
-
   return {
     validate:function(type,input) {
         var error;
