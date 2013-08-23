@@ -1,6 +1,7 @@
 var server = (function(){
     return {
-        fetchMonth: function(month,year){
+        fetchMonth: function(month,year,cb){
+            tinybudget.viewmodel.loadstatus(1);
             tinybudgetutils.issue('getMonth', [
             ['name',tinybudget.viewmodel.user.name],
             ['sess',tinybudget.viewmodel.user.sess],
@@ -11,18 +12,35 @@ var server = (function(){
             if (err || stat == 400) {
                 //console.log('error getMonth')
             } else {
-                var datai = JSON.parse(message);
-                //console.log(datai)
+                var datai = JSON.parse(message);              
+                var count = 0
                 
-                if (datai.items && datai.items.length > 0) {
-                    for (var i = 0; i < datai.items.length; i++) {
-                        var flg = (datai.items[i].isflagged == 'true');
-                        tinybudget.viewmodel.userItems.push(new rowitem(true, datai.items[i].desc, datai.items[i].amt, datai.items[i].year + "/" + datai.items[i].month + "/" + datai.items[i].day, datai.items[i].cat, datai.items[i].itemid, flg, datai.items[i].comment));
+                function run(){
+                    //console.log(count,datai.items.length - 2);
+                    var progress = Math.floor((count/datai.items.length)*100);
+                    if (progress % 10 == 0){
+                        tinybudget.viewmodel.getInitLoadBarProgress(progress);
                     }
-                } else {
-                    // no items in this month
-                }
+                    tinybudget.viewmodel.userItems.push(new rowitem(true, datai.items[count].desc, datai.items[count].amt, datai.items[count].year + "/" + datai.items[count].month + "/" + datai.items[count].day, datai.items[count].cat, datai.items[count].itemid, (datai.items[count].isflagged=="true"), datai.items[count].comment));
+                                       
+                    count++;
                     
+                    if (count >= datai.items.length){
+                        tinybudget.viewmodel.renderChart();
+                        tinybudget.viewmodel.loadstatus(2);
+                        tinybudget.viewmodel.getInitLoadBarProgress(0);
+                        return;
+                    } else {
+                        setTimeout(run,0);
+                    }
+                }; 
+
+                if (datai.items.length > 0){
+                    run();
+                } else {
+                    tinybudget.viewmodel.loadstatus(2);
+                }
+                
                 tinybudget.viewmodel.loadedMonths.push(month+","+year);
             }
             });
