@@ -19,7 +19,6 @@ var getInit = (function(){
                     tinybudget.viewmodel.date = JSON.parse(JSON.stringify(datai.date));
                     tinybudget.viewmodel.currentyear(tinybudget.viewmodel.date.year);
                     tinybudget.viewmodel.currentmonth(tinybudget.viewmodel.date.month);
-                    console.log(datai)
                     tinybudget.viewmodel.user.categories = JSON.parse(JSON.stringify(datai.categories));
                     
                     if (tinybudget.viewmodel.user.categories.length == 0) {
