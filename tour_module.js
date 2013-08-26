@@ -137,7 +137,7 @@ var user_tour = (function(){
             tour.addStep({
                 element: "#highchart",
                 title: "The Pie",
-                content: "Clicking on a pie slice brings all the items in the caregory to the Highlight Table",
+                content: "Clicking on a pie slice brings all the items in the category to the Highlight Table",
                 placement: 'top',
                 backdrop: true,
                 onHide: function(){
