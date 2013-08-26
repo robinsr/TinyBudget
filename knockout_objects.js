@@ -49,26 +49,22 @@ ko.observableArray.fn.subscribeArrayChanged = function (addCallback, deleteCallb
     // object representing an item in a user's collections of items
 function rowitem(loadedFromServer, desc, amt, date, cat, itemid, flag, comment) {
     var self = this;
-    self.desc = desc;
-    self.amt = amt;
-    self.date = date;
-    self.cat = cat;
+    self.desc = ko.observable(desc);
+    self.amt = ko.observable(amt);
+    self.date = ko.observable(date);
+    self.cat = ko.observable(cat);
     self.year = ko.computed(function () {
-        return dateFormat(Date.parse(self.date), 'yyyy');
+        return dateFormat(Date.parse(self.date()), 'yyyy');
     });
     self.month = ko.computed(function () {
-        return dateFormat(Date.parse(self.date), 'm');
+        return dateFormat(Date.parse(self.date()), 'm');
     });
     self.day = ko.computed(function () {
-        return dateFormat(Date.parse(self.date), 'd');
+        return dateFormat(Date.parse(self.date()), 'd');
     });
     self.formattedDate = ko.computed(function () {
-        return dateFormat(Date.parse(self.date), 'mmm d, yyyy');
+        return dateFormat(Date.parse(self.date()), 'mmm d, yyyy');
     });
-    self.editableDateFormat = ko.computed(function(){
-        return self.month() +"/" + self.day() + "/" + self.year();
-    });
-    self.editableDate = ko.observable(self.editableDateFormat());
     
     self.isflagged = ko.observable();
     flag ? self.isflagged(true): self.isflagged(false);
