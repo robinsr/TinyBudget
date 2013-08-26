@@ -334,32 +334,37 @@ function AppViewModel() {
         }
     }
 
-    self.editableItemFilter = ko.computed(function(){
-        return ko.utils.arrayFilter(self.userItems(), function (r) {
-            return self.editableItem() == r.itemid
-        });
-    })
 
+
+        // =========== EDITABLE ITEM ===================
+
+
+        // UI click handler - user clicks from list of items
     self.loadItemForEdit = function(item,event){
         if (self.modalStatus() == ''){
-            //console.log('setting editableItem to ',item.itemid);
+            console.log('setting editableItem to ',item.itemid);
             self.editableItem(item.itemid);
             self.modalStatus('edit');
         }
     }
 
+        // UI click handler - user clicks 'save' after editing item
     self.updateItem = function(){
-        var newItem = self.editableItemFilter()[0];
-        self.userItems.remove(self.editableItemFilter()[0]);
+        var itemInArrayToUpdate = ko.utils.arrayFirst(self.userItems(), function(item) {
+            return item.itemid == self.editableItem() 
+        });
+        console.log(ko.toJS(itemInArrayToUpdate))
+        if (itemInArrayToUpdate) {
+            itemInArrayToUpdate.loadedFromServer = false;
+            server.addItemToServer(itemInArrayToUpdate);
+            self.modalStatus('')
+        } else {
 
-
-        var flg = (newItem.isflagged() == true);
-
-        var newObject = new rowitem(false,newItem.desc,newItem.amt,newItem.editableDate(),newItem.cat,newItem.itemid,flg,newItem.comment());
-        //console.log(newObject);
-        self.userItems.push(newObject);
-        self.modalStatus('');
+        }
     }
+
+
+        // ==============================================
 
         // an array that replicates userItems except if filters out all the items that are not
         // in the month that the user is viewing
@@ -400,8 +405,8 @@ function AppViewModel() {
         self.sorting = true;
         (function (next) {
             self.userItems.sort(function (l, r) {
-                var l_parse = parseInt(l.amt),
-                    r_parse = parseInt(r.amt);
+                var l_parse = parseInt(l.amt()),
+                    r_parse = parseInt(r.amt());
                 return l_parse == r_parse ? 0 : (l_parse < r_parse ? -1 : 1)
             });
             next();
@@ -483,8 +488,8 @@ function AppViewModel() {
         for (i = 0; i < array.length; i++) {
 
                 // if payday item, add to paydayTotal else add the item to the category's total
-            if (array[i].cat.toLowerCase() == 'payday'){
-                paydayTotal += parseFloat(array[i].amt);
+            if (array[i].cat().toLowerCase() == 'payday'){
+                paydayTotal += parseFloat(array[i].amt());
             } else {
             
                 // ...go through every item in userCategories
@@ -497,9 +502,9 @@ function AppViewModel() {
                     
                         // if the category for this item match the category we're looking for, add the items
                         // amount to temp_totals and the total
-                    if (array[i].cat == self.userCategories()[ii]) {
-                        temp_totals[self.userCategories()[ii]] += parseFloat(array[i].amt);
-                        total += parseFloat(array[i].amt);
+                    if (array[i].cat() == self.userCategories()[ii]) {
+                        temp_totals[self.userCategories()[ii]] += parseFloat(array[i].amt());
+                        total += parseFloat(array[i].amt());
                     }  
                 }
             }
@@ -544,15 +549,15 @@ function AppViewModel() {
         for (var i = 0; i < array.length; i++) {
 
             var match = ko.utils.arrayFirst(self.userCategories(), function (category) {
-                return array[i].cat == category
+                return array[i].cat() == category
             });
 
             if (!match) {
                 var second_match = ko.utils.arrayFirst(self.unusedCategories(), function (unused) {
-                    return array[i].cat == unused
+                    return array[i].cat() == unused
                 });
                 if (!second_match) {
-                    self.unusedCategories.push(array[i].cat)
+                    self.unusedCategories.push(array[i].cat())
                 }
             }
         };
@@ -570,7 +575,7 @@ function AppViewModel() {
         // holds the array of items that match the name of the category in categoryHighlight
     self.categoryHighlightFilter = ko.computed(function(){
         return ko.utils.arrayFilter(self.userItems(), function (r) {
-            return (self.currentyear() == r.year()) && (self.currentmonth() == r.month()) && (self.categoryHighlight() == r.cat);
+            return (self.currentyear() == r.year()) && (self.currentmonth() == r.month()) && (self.categoryHighlight() == r.cat());
         });
     })
 
@@ -702,23 +707,6 @@ function AppViewModel() {
         return "width: " + self.csvLoadBarProgress()  + "%";
     });
 
-    self.stats = function(){
-        self.modalStatus('stats');
-        tinybudgetutils.issue('getCategoryTotals', [
-            ['name', self.user.name],
-            ['sess', self.user.sess],
-            ['year', self.currentyear()]
-        ], null, function (err, stat, data) {
-            if (err) {
-                console.log('error getting cat totals')
-            } else {
-                self.statsCategory.removeAll();
-                $(JSON.parse(data)).each(function(index,item){
-                    self.statsCategory.push(new statCategoryTotal(item.cat,item.amt,item.items,item.avg,item.likely_day))
-                })
-            }
-        });
-    }
     // login function, loads user items and categories from server and pushes to obversvable arrays    
     self.login = function (newuser_name, newuser_pass,cb) {
         newuser_name ? self.user.name = newuser_name : self.user.name = self.uname();
