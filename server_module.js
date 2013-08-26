@@ -53,12 +53,12 @@ var server = (function(){
                         tinybudgetutils.issue('addItem', [
                             ['name', tinybudget.viewmodel.user.name],
                             ['sess', tinybudget.viewmodel.user.sess],
-                            ['cat', item.cat],
+                            ['cat', item.cat()],
                             ['day', item.day()],
                             ['month', item.month()],
                             ['year', item.year()],
-                            ['amt', item.amt],
-                            ['desc', item.desc],
+                            ['amt', item.amt()],
+                            ['desc', item.desc()],
                             ['itemid', item.itemid],
                             ['isflagged', item.isflagged()],
                             ['comment', item.comment()]
