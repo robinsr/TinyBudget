@@ -569,7 +569,7 @@ function serveStatic(req, res) {
         }
     });
 }
-function sanitizeString(req, next) {
+function sanitizeString(req, res, next) {
 
     // limits on character length of each property
     var lengthLimits = {
@@ -619,7 +619,7 @@ function sanitizeString(req, next) {
 
 // handles incoming requests
 function handler(req, res) {
-    sanitizeString(req, function (ret) {
+    sanitizeString(req, res, function (ret) {
         if (!ret) {
             console.log('URL too long');
             res.writeHead(414);
