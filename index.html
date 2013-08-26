@@ -202,12 +202,12 @@ is_ie = true;
                             <tbody data-bind="foreach: $root.categoryHighlightFilter">
                             <tr data-bind="css: {error: isflagged }">
                                 <td data-bind="text: formattedDate()"></td>
-                                <td data-bind="text: desc" ></td>
-                                <td data-bind="text: amt"></td>
+                                <td data-bind="text: desc()" ></td>
+                                <td data-bind="text: amt()"></td>
                                 <td><i class="icon-remove" data-bind="click: $root.removeItem" title="Delete"></i></td>
                                 <td><i class="icon-flag" data-bind="click: $root.flagItem" title="Flag"></i></td>
                                 <!-- ko if: (comment() != '') -->
-                                <td><i class="comment_blue" data-bind="click: $root.commentItem, attr: {title: comment}"></i></td>
+                                <td><i class="comment_blue" data-bind="click: $root.commentItem, attr: {title: comment()}"></i></td>
                                 <!-- /ko -->
                                 <!-- ko if: (comment() == '') -->
                                 <td><i class="icon-comment" data-bind="click: $root.commentItem" title="Comment"></i></td>
@@ -266,7 +266,7 @@ is_ie = true;
                             <td data-bind="text: formattedDate()"></td>
                             <td data-bind="text: desc" ></td>
                             <td data-bind="text: cat" ></td>
-                            <td data-bind="css:{'text-error':$data.cat!=='payday','text-success':$data.cat=='payday'}">$<span data-bind="text: amt"></sapn></td>
+                            <td data-bind="css:{'text-error':$data.cat() !== 'payday','text-success':$data.cat() == 'payday'}">$<span data-bind="text: amt"></sapn></td>
                             <td><i class="icon-remove" data-bind="click: $root.removeItem" title="Delete"></i></td>
                             <td><i class="icon-flag" data-bind="click: $root.flagItem" title="Flag"></i></td>
                             <!-- ko if: (comment() != '') -->
@@ -318,7 +318,7 @@ is_ie = true;
 
             <span data-bind="visible: filteredUserItems().length == 0">
                 <div class="span12 no-items" style="background-color:gray">
-                    <h2>You dont have any items for <span data-bind="text: friendlymonth()"></span>, <span data-bind="text:friendlyyear()"></span></h2>
+                    <h2>You dont have any items for <span data-bind="text: friendlymonth()"></span>, <span data-bind="text:friendlyyear()"></span> <span data-bind="text: $root.filteredUserItems().length"></span></h2>
 
                 </div>
             </span>
@@ -481,11 +481,15 @@ is_ie = true;
         <h4>Edit Item</h4>
         <p class="muted" data-bind="text:editableItem().itemid"></p>
       </div>
-      <div class="modal-body" data-bind="foreach:editableItemFilter">
+      <div class="modal-body" data-bind="foreach:userItems">
+        <!-- ko if: itemid == $root.editableItem() -->
             <form class="form-horizontal" data-bind="submit:$root.updateItem">
                 <div class="control-group">
                     <label class="control-label">Date:</label>
-                    <div class="controls"><input type="text" data-bind="value:editableDate"></div>
+                    <div class="controls">
+                        <input type="text" data-bind="value:date">
+                        <p class="help-block">Date format yyyy/mm/dd</p>
+                    </div>
                 </div>
                 <div class="control-group">
                     <label class="control-label">Description:</label>
@@ -506,7 +510,7 @@ is_ie = true;
                         <button type="submit" class="btn btn-primary">Save</button>
                     </div>
             </form>
-           
+           <!-- /ko -->
       </div>
       <div class="modal-footer">
         <button class="btn btn-primary" type="button" data-bind="click: function(){modalClose()}">Cancel</button>
