@@ -53,15 +53,15 @@ var server = (function(){
                         tinybudgetutils.issue('addItem', [
                             ['name', tinybudget.viewmodel.user.name],
                             ['sess', tinybudget.viewmodel.user.sess],
-                            ['cat', item.cat()],
-                            ['day', item.day()],
-                            ['month', item.month()],
-                            ['year', item.year()],
-                            ['amt', item.amt()],
-                            ['desc', item.desc()],
-                            ['itemid', item.itemid],
-                            ['isflagged', item.isflagged()],
-                            ['comment', item.comment()]
+                            ['cat', encodeURIComponent(item.cat())],
+                            ['day', encodeURIComponent(item.day())],
+                            ['month', encodeURIComponent(item.month())],
+                            ['year', encodeURIComponent(item.year())],
+                            ['amt', encodeURIComponent(item.amt())],
+                            ['desc', encodeURIComponent(item.desc())],
+                            ['itemid', encodeURIComponent(item.itemid)],
+                            ['isflagged', encodeURIComponent(item.isflagged())],
+                            ['comment', encodeURIComponent(item.comment())]
                         ], null, function (err, stat, text) {
                             if (stat == 400){
                                 tinybudget.viewmodel.expiredSession();
@@ -83,10 +83,10 @@ var server = (function(){
                     tinybudgetutils.issue('deleteItem', [
                         ['name', tinybudget.viewmodel.user.name],
                         ['sess', tinybudget.viewmodel.user.sess],
-                        ['day', item.day()],
-                        ['month', item.month()],
-                        ['year', item.year()],
-                        ['itemid', item.itemid]
+                        ['day', encodeURIComponent(item.day())],
+                        ['month', encodeURIComponent(item.month())],
+                        ['year', encodeURIComponent(item.year())],
+                        ['itemid', encodeURIComponent(item.itemid)]
                     ], null, function (err, stat, text) {
                         if (stat == 400){
                             tinybudget.viewmodel.expiredSession();
@@ -106,7 +106,7 @@ var server = (function(){
                 tinybudgetutils.issue('addCategory', [
                     ['name', tinybudget.viewmodel.user.name],
                     ['sess', tinybudget.viewmodel.user.sess],
-                    ['cat', item]
+                    ['cat', encondeURIComponent(item)]
                 ], null, function (err, stat, text) {
                     if (stat == 400){
                         tinybudget.viewmodel.expiredSession();
@@ -123,7 +123,7 @@ var server = (function(){
                 tinybudgetutils.issue('deleteCategory', [
                     ['name', tinybudget.viewmodel.user.name],
                     ['sess', tinybudget.viewmodel.user.sess],
-                    ['cat', item]
+                    ['cat', encodeURIComponent(item)]
                 ], null, function (err, stat, text) {
                     if (stat == 400){
                         tinybudget.viewmodel.expiredSession();
