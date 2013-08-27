@@ -498,8 +498,8 @@ is_ie = true;
                 <div class="control-group">
                     <label class="control-label">Category:</label>
                     <div class="controls">
-                        <p class="help-block" data-bind="visible: cat == 'payday'">This Item is a PayDay</p>
-                        <select data-bind="disable: cat == 'payday',options:$root.userCategories,value:cat"></select>
+                        <p class="help-block" data-bind="visible: cat() == 'payday'">This Item is a PayDay</p>
+                        <select data-bind="disable: cat() == 'payday',options:$root.userCategories,value:cat()"></select>
                     </div>
                 </div>
                 <div class="control-group">

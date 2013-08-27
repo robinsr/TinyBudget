@@ -342,7 +342,6 @@ function AppViewModel() {
         // UI click handler - user clicks from list of items
     self.loadItemForEdit = function(item,event){
         if (self.modalStatus() == ''){
-            console.log('setting editableItem to ',item.itemid);
             self.editableItem(item.itemid);
             self.modalStatus('edit');
         }
@@ -353,7 +352,7 @@ function AppViewModel() {
         var itemInArrayToUpdate = ko.utils.arrayFirst(self.userItems(), function(item) {
             return item.itemid == self.editableItem() 
         });
-        console.log(ko.toJS(itemInArrayToUpdate))
+
         if (itemInArrayToUpdate) {
             itemInArrayToUpdate.loadedFromServer = false;
             server.addItemToServer(itemInArrayToUpdate);
