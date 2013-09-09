@@ -23,7 +23,6 @@ var tinybudgetutils = (function(){
     validate:function(type,input) {
         var error;
         if (type == 'desc'){
-          console.log('validating');
 
           var pat = /.*\&/
         var m1 = pat.test(input);
@@ -35,11 +34,9 @@ var tinybudgetutils = (function(){
                 error = "too long";
                 return error;
             } else if (m1){
-              console.log(m1);
               error = 'Ampersand';
               return error;
             } else {
-              console.log('nothing wrong with desc');
                 return null
             }
 
@@ -54,7 +51,6 @@ var tinybudgetutils = (function(){
             } else {
                 var re = /^-?\$?[0-9]*\.?([0-9]{2})?$/
                 var m2 = re.test(input)
-                //console.log('tested and ' + m2)
                 if (!m2) {
                     error = "invalid amount format";
                     return error;
@@ -79,8 +75,7 @@ var tinybudgetutils = (function(){
             } else {
 
                 for (var i = 0; i < date.length; i++) {
-                    date[i] = parseInt(date[i]);
-                    //console.log('parsing ' + date[i])
+                    date[i] = parseInt(date[i]);l
                     if (isNaN(date[i])){
                         error = 'date string not a number';
                         return error;
