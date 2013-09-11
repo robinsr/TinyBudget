@@ -51,7 +51,7 @@ ko.bindingHandlers.iePlaceholder = {
             if($(this).val() === ''){
                 $(this).val($(this).attr('placeholder')).addClass('placeholder');
             }
-        }).focus(funcion(){
+        }).focus(function(){
             if($(this).val() === $(this).attr('placeholder')){
                 $(this).val('').removeClass('placeholder');
             }
