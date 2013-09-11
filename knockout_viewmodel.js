@@ -137,7 +137,6 @@ function AppViewModel() {
                 // 32 character limit
             if (self.desc().length <= 32) {
                 var amp = tinybudgetutils.validate('desc',self.desc())
-                console.log(amp);
                 if (!amp){
                     if (self.amt().length > 0) {
                         if (self.amt().length <= 8) {
