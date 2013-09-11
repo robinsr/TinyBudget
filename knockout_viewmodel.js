@@ -51,12 +51,6 @@ function AppViewModel() {
     self.canCSV = ko.observable(false);
     self.statsCategory = ko.observableArray([])
 
-    if (is_ie){
-        self.desc("Description");
-        self.amt("Amount");
-        self.input_date("Date");
-    }
-
     if (window.File && window.FileReader && window.FileList && window.Blob) {
         self.canCSV(true);
     }
