@@ -43,6 +43,26 @@ ko.observableArray.fn.subscribeArrayChanged = function (addCallback, deleteCallb
         previousValue = undefined;
     });
 };
+// ============== CUSTOM BINDINGS =================
+
+ko.bindingHandlers.iePlaceholder = {
+    init: function(element, valueAccessor){
+        $(element)).blur(function(){
+            if($(this).val() === ''){
+                $(this).val($(this).attr('placeholder')).addClass('placeholder');
+            }
+        }).focus(funcion(){
+            if($(this).val() === $(this).attr('placeholder')){
+                $(this).val('').removeClass('placeholder');
+            }
+        })
+    },
+    update: function(element, valueAccessor){
+        if($(this).val() === ''){
+            $(this).val($(this).attr('placeholder')).addClass('placeholder');
+        }
+    }
+}
 
 // ==============  KNOCKOUT OBJECTS ==================
 
