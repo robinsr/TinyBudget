@@ -129,12 +129,12 @@ is_ie = true;
                     </ul>
                     <!--p class="lead">Input an Item</p-->
                     <form class="form-inline input_form" id="input_form"  data-bind="submit: addItem">
-                        <input id="validate_description" class="input-medium input_form_item input_form_item_val error" type="text" name="desc" placeholder="Descritption" data-bind="value:desc,css:{'input-error':input_error() == 'desc'}">
-                        <input id="validate_amount" class="input-medium input_form_item input_form_item_val" type="text" name="amt" data-toggle="tooltip" placeholder="Amount"  data-bind="value:amt,css:{'input-error':input_error() == 'amt'}">
+                        <input id="validate_description" class="input-medium input_form_item input_form_item_val error" type="text" name="desc" placeholder="Descritption" data-bind="value:desc,css:{'input-error':input_error() == 'desc'},iePlaceholder:$data">
+                        <input id="validate_amount" class="input-medium input_form_item input_form_item_val" type="text" name="amt" data-toggle="tooltip" placeholder="Amount"  data-bind="value:amt,css:{'input-error':input_error() == 'amt'},iePlaceholder:$data">
                         <select class="input-medium input_form_item" id="cat_select" name="cat" data-bind="disable: expenseOrPaydayActive() == 'payday',options:userCategories,value:cat">
                             <option value="" data-bind="text: name, value: name"></option>
                         </select>
-                        <input id="validate_date" type="text" class="input-small input_form_item_val input_form_item" name="date" placeholder="Date"  data-bind="value:input_date,css:{'input-error':input_error() == 'date'}">
+                        <input id="validate_date" type="text" class="input-small input_form_item_val input_form_item" name="date" placeholder="Date"  data-bind="value:input_date,css:{'input-error':input_error() == 'date'},iePlaceholder:$data">
                         <button type="submit" class="btn btn-primary btn-mini" id="additem">Add</button>
                     </form>
                     <div id="input_error_div"><span data-bind="text: inputFeedback()"></span></div>
