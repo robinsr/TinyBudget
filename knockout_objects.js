@@ -47,7 +47,7 @@ ko.observableArray.fn.subscribeArrayChanged = function (addCallback, deleteCallb
 
 ko.bindingHandlers.iePlaceholder = {
     init: function(element, valueAccessor){
-        $(element)).blur(function(){
+        $(element).blur(function(){
             if($(this).val() === ''){
                 $(this).val($(this).attr('placeholder')).addClass('placeholder');
             }
