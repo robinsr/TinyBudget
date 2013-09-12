@@ -149,7 +149,7 @@ function AppViewModel() {
                                     // check to see if there are 3 members
                                     if ((date[0] && date[1] && date[2])) {
                                         for (var i = 0; i < date.length; i++) {
-                                            date[i] = parseInt(date[i]);
+                                            date[i] = parseInt(date[i], 10);
                                             //console.log('parsing ' + date[i])
                                         };
                                             // check is day, month, and year are acceptable
