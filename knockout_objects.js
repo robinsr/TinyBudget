@@ -67,6 +67,30 @@ ko.bindingHandlers.iePlaceholder = {
     }
 }
 
+// ==============  KNOCKOUT EXTENDERS ==================
+
+ko.extenders.lockDownPayday = function(target, precision) {
+
+    var result = ko.computed({
+        read: target,  //always return the original observables value
+        write: function(newValue) {
+            var current = target();
+                
+            // prevent payday from changing
+            if (current == 'payday') {
+                target('payday');
+            } else {
+                target(newValue);
+            }
+        }
+    });
+ 
+    result(target());
+ 
+    //return the new computed observable
+    return result;
+};
+
 // ==============  KNOCKOUT OBJECTS ==================
 
     // object representing an item in a user's collections of items
@@ -75,7 +99,7 @@ function rowitem(loadedFromServer, desc, amt, date, cat, itemid, flag, comment) 
     self.desc = ko.observable(desc);
     self.amt = ko.observable(amt);
     self.date = ko.observable(date);
-    self.cat = ko.observable(cat);
+    self.cat = ko.observable(cat).extend({ lockDownPayday: null });
     self.year = ko.computed(function () {
         return dateFormat(Date.parse(self.date()), 'yyyy');
     });
