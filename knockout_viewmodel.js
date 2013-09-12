@@ -13,9 +13,9 @@ function AppViewModel() {
     self.inputFeedback = ko.observable('');
     self.expenseOrPaydayActive = ko.observable("expense");
     self.userItems = ko.observableArray([]);
-    self.desc = ko.observable("");
-    self.amt = ko.observable("");
-    self.input_date = ko.observable("");
+    self.desc = ko.observable('');
+    self.amt = ko.observable('');
+    self.input_date = ko.observable('');
     self.cat = ko.observable(""); 
     self.input_error = ko.observable("");
     self.sorting = false;
