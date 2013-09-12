@@ -47,18 +47,21 @@ ko.observableArray.fn.subscribeArrayChanged = function (addCallback, deleteCallb
 
 ko.bindingHandlers.iePlaceholder = {
     init: function(element, valueAccessor){
-        $(element).blur(function(){
-            if($(this).val() === ''){
-                $(this).val($(this).attr('placeholder')).addClass('placeholder');
-            }
-        }).focus(function(){
-            if($(this).val() === $(this).attr('placeholder')){
-                $(this).val('').removeClass('placeholder');
-            }
-        })
+    	if (is_ie){
+	    	$(element).val($(element).attr('placeholder')).addClass('placeholder').blur();
+	        $(element).blur(function(){
+	            if($(this).val() === ''){
+	                $(this).val($(this).attr('placeholder')).addClass('placeholder');
+	            }
+	        }).focus(function(){
+	            if($(this).val() == $(this).attr('placeholder')){
+	                $(this).val('').removeClass('placeholder');
+	            }
+	        })
+	    }
     },
     update: function(element, valueAccessor){
-        if($(this).val() === ''){
+    	if (is_ie && $(this).val() === ''){
             $(this).val($(this).attr('placeholder')).addClass('placeholder');
         }
     }
