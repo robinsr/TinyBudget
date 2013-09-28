@@ -908,6 +908,11 @@ function AppViewModel() {
 
 
     }
+    
+    self.userCategories.subscribe(function(array){
+        console.log('added new category')
+        console.log(array);
+    })
 
 
 
