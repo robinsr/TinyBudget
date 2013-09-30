@@ -106,7 +106,7 @@ var server = (function(){
                 tinybudgetutils.issue('addCategory', [
                     ['name', tinybudget.viewmodel.user.name],
                     ['sess', tinybudget.viewmodel.user.sess],
-                    ['cat', encondeURIComponent(item)]
+                    ['cat', encodeURIComponent(item)]
                 ], null, function (err, stat, text) {
                     if (stat == 400){
                         tinybudget.viewmodel.expiredSession();
