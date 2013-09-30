@@ -905,15 +905,8 @@ function AppViewModel() {
                 self.netWorth(parseFloat(Math.abs(datai.calculations.netPerDay)/100).toFixed(2));
             }
         });
-
-
     }
     
-    self.userCategories.subscribe(function(array){
-        console.log('added new category')
-        console.log(array);
-    })
-
 
 
 }
