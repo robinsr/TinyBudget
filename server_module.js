@@ -15,7 +15,6 @@ var server = (function(){
                 var datai = JSON.parse(message);            
                 var newItems = ko.mapping.fromJS([])
                 ko.mapping.fromJS(datai.items, mapping,newItems);
-                console.log(newItems());
                 ko.utils.arrayPushAll(tinybudget.viewmodel.userItems, newItems());
                 tinybudget.viewmodel.userItems.valueHasMutated();
                 tinybudget.viewmodel.renderChart();
