@@ -13,6 +13,7 @@ head.js(
     "resources/jquery.watable.js",
     "http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/md5.js",
     "resources/knockout_full.js",
+    "http://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.3.5/knockout.mapping.js",
     "resources/dateformat.js",
     "resources/jquery.cookie.js",
     "bootstrap/bootstrap-datepicker.js",
@@ -23,11 +24,11 @@ head.js(
     "resources/highcharts.js",
     "utils.js",
     "server_module.js",
-    "getInit.js",
     "tour_module.js",
     "chart_objects.js",
     "knockout_objects.js",
     "knockout_viewmodel.js",
+    "getInitdev.js",
     "CSVparser.js",
     
     function(){
