@@ -113,11 +113,10 @@ function mappingRowItem(opt) {
         return dateFormat(Date.parse(self.date()), 'mmm d, yyyy');
     });
     
-    self.isflagged = ko.observable();
-    opt.flag ? self.isflagged(true): self.isflagged(false);
+    self.isflagged = ko.observable(opt.isflagged);
 
     self.comment = ko.observable();
-    opt.comment ? self.comment(opt.comment): self.comment('');
+    opt.comment ? self.comment(opt.comment): self.comment(''); 
     
     opt.itemid ? self.itemid = opt.itemid : self.itemid = CryptoJS.MD5(Math.random().toString());
     
@@ -153,6 +152,14 @@ function rowitem(loadedFromServer, desc, amt, date, cat, itemid, flag, comment) 
     
         // to avoid re-adding items to server when the server loads items
     self.loadedFromServer = loadedFromServer;
+}
+var mapping = {
+    create: function (opt) {
+        opt.data.loadedFromServer = true;
+        opt.data.isflagged = (opt.data.isflagged == 'true' || opt.data.isflagged === true);
+        opt.data.date = opt.data.month +"/"+ opt.data.day +"/"+ opt.data.year;
+        return new mappingRowItem(opt.data)
+    }
 }
 
 
