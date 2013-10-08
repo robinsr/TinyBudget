@@ -28,7 +28,7 @@ head.js(
     "chart_objects.js",
     "knockout_objects.js",
     "knockout_viewmodel.js",
-    "getInitdev.js",
+    "getInit.js",
     "CSVparser.js",
     
     function(){
