@@ -35,7 +35,6 @@ function AppViewModel() {
     self.oldPass = ko.observable("");
     self.newPass = ko.observable("");
     self.changeEmailError = ko.observableArray([]);
-    self.getInitLoadBarProgress = ko.observable(0);
     self.csvLoadBarProgress = ko.observable(0);
     self.uname = ko.observable('');
     self.relogin_uname = ko.observable('');
@@ -690,10 +689,6 @@ function AppViewModel() {
         self.modalStatus("serverError");
     }
     
-    self.loadBarWidth =  ko.computed (function()    {
-        //console.log('running '+self.getInitLoadBarProgress());
-        return "width: " + self.getInitLoadBarProgress()  + "%";
-    });
     self.csvloadBarWidth =  ko.computed (function()    {
         //console.log('running '+self.getInitLoadBarProgress());
         return "width: " + self.csvLoadBarProgress()  + "%";
