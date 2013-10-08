@@ -15,6 +15,7 @@ is_ie = true;
 <script type="text/javascript" src="loader.js"></script>
 <link rel="stylesheet" type="text/css" href="bootstrap/bootstrap.min.css">
 <link rel="stylesheet" type="text/css" href="style.css">
+<link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
 </head>
 <body>
 <div id="wrap">
@@ -109,8 +110,8 @@ is_ie = true;
         <span data-bind="visible: loadstatus() == 1" style="display:none;">
             <div class="center_items span12 login_div">
                 <p class="lead loading">Loading...</p>
-                <div class="progress progress-striped active">
-                  <div class="bar" id="prgbartest" style="width:0%" data-bind="attr: { style: $root.loadBarWidth }"></div><!---->
+                <div class="load-refresh-container spin">
+                    <i class="icon-refresh"></i>
                 </div>
             </div>
         </span>
