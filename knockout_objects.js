@@ -94,6 +94,36 @@ ko.extenders.lockDownPayday = function(target, precision) {
 // ==============  KNOCKOUT OBJECTS ==================
 
     // object representing an item in a user's collections of items
+function mappingRowItem(opt) {
+    var self = this;
+    self.desc = ko.observable(opt.desc);
+    self.amt = ko.observable(opt.amt);
+    self.date = ko.observable(opt.date);
+    self.cat = ko.observable(opt.cat).extend({ lockDownPayday: null });
+    self.year = ko.computed(function () {
+        return dateFormat(Date.parse(self.date()), 'yyyy');
+    });
+    self.month = ko.computed(function () {
+        return dateFormat(Date.parse(self.date()), 'm');
+    });
+    self.day = ko.computed(function () {
+        return dateFormat(Date.parse(self.date()), 'd');
+    });
+    self.formattedDate = ko.computed(function () {
+        return dateFormat(Date.parse(self.date()), 'mmm d, yyyy');
+    });
+    
+    self.isflagged = ko.observable();
+    opt.flag ? self.isflagged(true): self.isflagged(false);
+
+    self.comment = ko.observable();
+    opt.comment ? self.comment(opt.comment): self.comment('');
+    
+    opt.itemid ? self.itemid = opt.itemid : self.itemid = CryptoJS.MD5(Math.random().toString());
+    
+        // to avoid re-adding items to server when the server loads items
+    self.loadedFromServer = opt.loadedFromServer;
+}
 function rowitem(loadedFromServer, desc, amt, date, cat, itemid, flag, comment) {
     var self = this;
     self.desc = ko.observable(desc);
@@ -124,6 +154,7 @@ function rowitem(loadedFromServer, desc, amt, date, cat, itemid, flag, comment) 
         // to avoid re-adding items to server when the server loads items
     self.loadedFromServer = loadedFromServer;
 }
+
 
 
     // object representing the total monetary values of each category
