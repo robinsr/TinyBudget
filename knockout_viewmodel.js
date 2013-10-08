@@ -12,7 +12,7 @@ function AppViewModel() {
     self.signuperror = ko.observable(0);
     self.inputFeedback = ko.observable('');
     self.expenseOrPaydayActive = ko.observable("expense");
-    self.userItems = ko.observableArray([]);
+    self.userItems = ko.mapping.fromJS([])
     self.desc = ko.observable('');
     self.amt = ko.observable('');
     self.input_date = ko.observable('');
@@ -24,7 +24,7 @@ function AppViewModel() {
     self.showUnspent = ko.observable(false);
     self.unusedCategories = ko.observableArray([]);
     self.categoryHighlight = ko.observable();
-    self.userCategories = ko.observableArray([]);
+    self.userCategories = ko.mapping.fromJS([]);
     self.userCategoriesTotals = ko.observableArray([]);
     self.categoryFeedback = ko.observable();
     self.categoryValidateState = ko.observable();
