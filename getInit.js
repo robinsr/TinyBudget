@@ -24,19 +24,9 @@ var getInit = (function(){
                     if (tinybudget.viewmodel.user.categories.length == 0) {
                         tinybudget.viewmodel.modalStatus("tour");
                     } else {
-                        // for (var i = 0; i < tinybudget.viewmodel.user.categories.length; i++) {
-                        //     tinybudget.viewmodel.userCategories.push(tinybudget.viewmodel.user.categories[i]);
-                        // };
                         ko.mapping.fromJS(datai.categories,tinybudget.viewmodel.userCategories)
                     }
                     
-                    var mapping = {
-                        create: function (opt) {
-                            opt.data.loadedFromServer = true;
-                            opt.data.date = opt.data.month +"/"+ opt.data.day +"/"+ opt.data.year;
-                            return new mappingRowItem(opt.data)
-                        }
-                    }
                     tinybudget.viewmodel.loadstatus(2);
                     ko.mapping.fromJS(datai.items, mapping, tinybudget.viewmodel.userItems)                    
                     var gitInitMonths = [
