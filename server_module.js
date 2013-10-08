@@ -12,35 +12,14 @@ var server = (function(){
             if (err || stat == 400) {
                 //console.log('error getMonth')
             } else {
-                var datai = JSON.parse(message);              
-                var count = 0
-                
-                function run(){
-                    //console.log(count,datai.items.length - 2);
-                    var progress = Math.floor((count/datai.items.length)*100);
-                    if (progress % 10 == 0){
-                        tinybudget.viewmodel.getInitLoadBarProgress(progress);
-                    }
-                    tinybudget.viewmodel.userItems.push(new rowitem(true, datai.items[count].desc, datai.items[count].amt, datai.items[count].year + "/" + datai.items[count].month + "/" + datai.items[count].day, datai.items[count].cat, datai.items[count].itemid, (datai.items[count].isflagged=="true"), datai.items[count].comment));
-                                       
-                    count++;
-                    
-                    if (count >= datai.items.length){
-                        tinybudget.viewmodel.renderChart();
-                        tinybudget.viewmodel.loadstatus(2);
-                        tinybudget.viewmodel.getInitLoadBarProgress(0);
-                        return;
-                    } else {
-                        setTimeout(run,0);
-                    }
-                }; 
-
-                if (datai.items.length > 0){
-                    run();
-                } else {
-                    tinybudget.viewmodel.loadstatus(2);
-                }
-                
+                var datai = JSON.parse(message);            
+                var newItems = ko.mapping.fromJS([])
+                ko.mapping.fromJS(datai.items, mapping,newItems);
+                console.log(newItems());
+                ko.utils.arrayPushAll(tinybudget.viewmodel.userItems, newItems());
+                tinybudget.viewmodel.userItems.valueHasMutated();
+                tinybudget.viewmodel.renderChart();
+                tinybudget.viewmodel.loadstatus(2);
                 tinybudget.viewmodel.loadedMonths.push(month+","+year);
             }
             });
