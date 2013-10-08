@@ -24,44 +24,21 @@ var getInit = (function(){
                     if (tinybudget.viewmodel.user.categories.length == 0) {
                         tinybudget.viewmodel.modalStatus("tour");
                     } else {
-                        for (var i = 0; i < tinybudget.viewmodel.user.categories.length; i++) {
-                            tinybudget.viewmodel.userCategories.push(tinybudget.viewmodel.user.categories[i]);
-                        };
+                        // for (var i = 0; i < tinybudget.viewmodel.user.categories.length; i++) {
+                        //     tinybudget.viewmodel.userCategories.push(tinybudget.viewmodel.user.categories[i]);
+                        // };
+                        ko.mapping.fromJS(datai.categories,tinybudget.viewmodel.userCategories)
                     }
                     
-                    itemCount = datai.items.length;
-                    //console.log(datai.items);
-                    if (itemCount > 2) {
-                            // The following is not in a for loop because the UI will not update 
-                            // the progress bar until the for loop completes
-                        var count = 0
-                        
-                        function run(){
-                            //console.log(count,datai.items.length - 2);
-                            var progress = Math.floor((count/datai.items.length)*100);
-                            if (progress % 10 == 0){
-                                tinybudget.viewmodel.getInitLoadBarProgress(progress);
-                            }
-                            tinybudget.viewmodel.userItems.push(new rowitem(true, datai.items[count].desc, datai.items[count].amt, datai.items[count].year + "/" + datai.items[count].month + "/" + datai.items[count].day, datai.items[count].cat, datai.items[count].itemid, (datai.items[count].isflagged=="true"), datai.items[count].comment));                           
-                            count++;
-                            
-                            if (count >= datai.items.length){
-                                tinybudget.viewmodel.renderChart();
-                                tinybudget.viewmodel.loadstatus(2);
-                                tinybudget.viewmodel.getInitLoadBarProgress(0);
-                                return;
-                            } else {
-                                setTimeout(run,0);
-                            }
-                        }; 
-                        run();
-                        
-                    } else if (itemCount > 1){
-                        tinybudget.viewmodel.loadstatus(2);
-                        tinybudget.viewmodel.userItems.push(new rowitem(true, datai.items[0].desc, datai.items[0].amt, datai.items[0].year + "/" + datai.items[0].month + "/" + datai.items[0].day, datai.items[0].cat, datai.items[0].itemid, (datai.items[0].isflagged=="true"), datai.items[0].comment));
-                    } else {
-                        tinybudget.viewmodel.loadstatus(2);
+                    var mapping = {
+                        create: function (opt) {
+                            opt.data.loadedFromServer = true;
+                            opt.data.date = opt.data.month +"/"+ opt.data.day +"/"+ opt.data.year;
+                            return new mappingRowItem(opt.data)
+                        }
                     }
+                    tinybudget.viewmodel.loadstatus(2);
+                    ko.mapping.fromJS(datai.items, mapping, tinybudget.viewmodel.userItems)                    
                     var gitInitMonths = [
                         tinybudget.viewmodel.date.month+","+tinybudget.viewmodel.date.year,
                         tinybudget.viewmodel.date.one_month_back+","+tinybudget.viewmodel.date.one_month_back_yr,
