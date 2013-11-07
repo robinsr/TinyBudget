@@ -10,7 +10,7 @@ var app = require('http').createServer(handler)
   , util = require('util')
   , moment = require('moment')
   , async = require('async')
-  , stats = require('./stats');
+  , stats = require('./dbScripts/stats');
 
 var mimeType = {
     '.js': 'text/javascript',
@@ -545,12 +545,14 @@ function changePass(req, res, q) {
 
 // handles static content
 function serveStatic(req, res) {
+    console.log(req.url)
     var filePath;
     if (req.url == '/') {
-        filePath = __dirname+'/index.html';
+        filePath = __dirname+'/public/index.html';
     } else {
-        filePath = __dirname+"/"+req.url;
+        filePath = __dirname+"/public"+req.url;
     }
+    console.log(filePath)
     fs.exists(filePath, function (exists) {
         if (exists) {
 
