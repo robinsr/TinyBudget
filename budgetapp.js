@@ -545,9 +545,11 @@ function changePass(req, res, q) {
 
 // handles static content
 function serveStatic(req, res) {
-    var filePath = '.' + req.url;
-    if (filePath == './') {
-        filePath = './index.html';
+    var filePath;
+    if (req.url == '/') {
+        filePath = __dirname+'/index.html';
+    } else {
+        filePath = __dirname+"/"+req.url;
     }
     fs.exists(filePath, function (exists) {
         if (exists) {
