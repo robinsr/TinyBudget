@@ -8,28 +8,7 @@ return d};d.ready(e,function(){q()&&g(l.ALL,function(a){h(a)});d.feature&&d.feat
 return}i()}}()}setTimeout(function(){C=!0;g(B,function(b){b()})},300)})(window);
 
 head.js(
-    "resources/jquery-1.8.3.min.js",
-    "bootstrap/bootstrap.min.js",
-    "resources/jquery.watable.js",
-    "http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/md5.js",
-    "resources/knockout_full.js",
-    "http://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.3.5/knockout.mapping.js",
-    "resources/dateformat.js",
-    "resources/jquery.cookie.js",
-    "bootstrap/bootstrap-datepicker.js",
-    "bootstrap/bootstrap-modal.js",
-    "bootstrap/bootstrap-tooltip.js",
-    "bootstrap/bootstrap-popover.js",
-    "bootstrap/bootstrap-tour.js",
-    "resources/highcharts.js",
-    "utils.js",
-    "knockout_objects.js",
-    "server_module.js",
-    "tour_module.js",
-    "chart_objects.js",
-    "knockout_viewmodel.js",
-    "getInit.js",
-    "CSVparser.js",
+    "public/js/dist/TinyBudget.min.js",
     
     function(){
        
