@@ -631,11 +631,6 @@ function handler(req, res) {
             return;
         } else {
 
-            // dev server only, remove for production
-            req.url = req.url.replace('/TinyBudget', '');
-            req.url = req.url.replace('/dev', '');
-
-
             var q = qs.parse(nodeurl.parse(req.url).query);
             var patharray = nodeurl.parse(req.url).pathname.split('/');
             var filePath = '.' + req.url;
