@@ -1,7 +1,7 @@
 var app = require('http').createServer(handler)
   , path = require('path')
   , fs = require('fs')
-  , databaseUrl = "tinybudget"
+  , databaseUrl = process.env.MONGOLAB_URI || "tinybudget"
   , collections = ["users", "items","sessions"]
   , db = require("mongojs").connect(databaseUrl, collections)
   , nodeurl = require('url')
