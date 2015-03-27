@@ -6,11 +6,7 @@ var User = require('mongoose').model('User')
 
 module.exports.login = function (req, res, query) {
   User.findOne({ name: query.name }, function (err, user) {
-    if (err) {
-      res.writeHead(500, { 'Content-Type': 'text/plain' });
-      res.end(err.toString());
-      return 
-    }
+    if (err) return helpers.handleError(req, res, err);
 
     if (!user) {
       res.writeHead(400, { 'Content-Type': 'text/plain' });
@@ -27,26 +23,35 @@ module.exports.login = function (req, res, query) {
     }
 
     helpers.requestHash(function(hash){
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ sessionid: hash })); 
-      db.sessions.insert({user:query.name,session:hash})
+      db.sessions.findAndModify({
+        query: {
+          user: query.name
+        },
+        update: {
+          $set: {
+            session: hash
+          }
+        },
+        upsert: true
+      }, function (err) {
+        if (err) return helpers.handleError(req, res, err);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ sessionid: hash })); 
+      });
     });
   });
 }
 
 module.exports.logout = function (req, res, query) {
-  db.sessions.remove({user:query.name},function(err,r){
-    if (err) {
-      res.writeHead(500, { 'Content-Type': 'text/plain' });
-      res.end(err.toString());
-      return 
-    } if (!r) {
+  db.sessions.remove({ user:query.name }, function (err, affected){
+    if (err) return helpers.handleError(req, res, err);
+    if (!affected) {
       res.writeHead(400, { 'Content-Type': 'text/plain' });
-      res.end('No session found');
-    } else {
-      res.writeHead(200, { 'Content-Type': 'text/plain' });
-      res.end('Logged Out');
+      return res.end('No session found');
     }
+
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Logged Out');
   })
 }
 
@@ -56,29 +61,20 @@ module.exports.createUser = function (req, res, query) {
     name: query.name,
     password: query.pass,
   }, function (err) {
-    if (err) {
-      res.writeHead(500, { 'Content-Type': 'text/plain' });
-      res.end(err.toString());
-      return;
-    } else {
-      res.writeHead(200, { 'Content-Type': 'text/plain' });
-      res.end('Success! created account for ' + query.name);
-    }
+    if (err) return helpers.handleError(req, res, err);
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Success! created account for ' + query.name);
   });
 }
 
 module.exports.changeEmail = function (req, res, q){
   helpers.validateSession(q.name, q.sess, function (ex) {
     if (!ex) {
-      respondInsufficient(req, res, "failed auth at changePass");
+      helpers.resondInsufficient(req, res, "failed auth at changePass");
       return
     } else {
       User.load({ name: q.name }, function (err, user) {
-        if (err) {
-          res.writeHead(500, { 'Content-Type': 'text/plain' });
-          res.end(err.toString());
-          return
-        }
+        if (err) return helpers.handleError(req, res, err);
 
         if (!user) {
           res.writeHead(500, { 'Content-Type': 'text/plain' });
@@ -106,16 +102,12 @@ module.exports.changeEmail = function (req, res, q){
 module.exports.changePass = function (req, res, q) {
   helpers.validateSession(q.name, q.sess, function (ex) {
     if (!ex) {
-      respondInsufficient(req, res, "failed auth at changePass");
+      helpers.resondInsufficient(req, res, "failed auth at changePass");
       return
     } else {
 
       User.load({ name: q.name }, function (err, user) {
-        if (err) {
-          res.writeHead(500, { 'Content-Type': 'text/plain' });
-          res.end(err.toString());
-          return
-        }
+        if (err) return helpers.handleError(req, res, err);
 
         if (!user) {
           res.writeHead(500, { 'Content-Type': 'text/plain' });
@@ -126,11 +118,7 @@ module.exports.changePass = function (req, res, q) {
         user.password = q.newPass;
 
         user.save(function (err) {
-          if (err) {
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end(err.toString());
-            return
-          }
+          if (err) return helpers.handleError(req, res, err);
 
           res.writeHead(200, { 'Content-Type': 'text/plain' });
           res.end('Pass successfully changed');
