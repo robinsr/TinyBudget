@@ -1,17 +1,16 @@
 var User = require('mongoose').model('User')
-, helpers = require('./../helpers')
 , databaseUrl = process.env.MONGOLAB_URI || "tinybudget"
 , collections = ["items"]
 , db = require("mongojs").connect(databaseUrl, collections)
 , async = require('async')
 , moment = require('moment')
-, stats = require('./../dbScripts/stats')
+, extend = require('util')._extend;
 
 
 function item(obj){
     this.cat = obj.cat;
-    this.isflagged = obj.isflagged;
-    this.comment = obj.comment;
+    this.isflagged = obj.isflagged || null;
+    this.comment = obj.comment || '';
     this.amt = parseFloat(obj.amt).toFixed(2) * 100;
     this.desc = obj.desc;
     this.itemid = obj.itemid;
@@ -19,7 +18,7 @@ function item(obj){
     this.month = parseInt(obj.month);
     this.year = parseInt(obj.year);
     this.query_short = (parseInt(obj.year * 100)) + parseInt(obj.month),
-    this.owner = obj.name;
+    this.owner = obj.owner || obj.name;
 }
 
 function delItem(obj){
@@ -27,243 +26,123 @@ function delItem(obj){
     this.day = parseInt(obj.day);
     this.month = parseInt(obj.month);
     this.year = parseInt(obj.year);
-    this.owner = obj.name;
+    this.owner = obj.owner || obj.name;
 }
 
-module.exports.addItem = function (req, res, query) {
-    helpers.validateSession(query.name, query.sess, function (ex) {
-        if (!ex) {
-            helpers.resondInsufficient(req, res, "failed auth at addItem");
-            return
-        } else {
-            var newItem = new item(query);
-            console.log(newItem);
-            args = {
-                'query': {itemid: newItem.itemid},
-                'update': newItem,
-                'upsert':true
-            }
-            db.items.findAndModify(args, function(err,result){
-                if (err) {
-                    res.writeHead(500, { 'Content-Type': 'text/plain' });
-                    res.end('Error adding item');
-                    return
-                } else {
-                    res.writeHead(200, { 'Content-Type': 'text/plain' });
-                    res.end('Item Added: ' + newItem.itemid);
-                    return
-                }
-            })
+module.exports.addItem = function (req, res, next) {
+  var newItem = new item(req.query);
+  args = {
+    'query': { itemid: newItem.itemid },
+    'update': newItem,
+    'upsert': true
+  }
+  db.items.findAndModify(args, function (err, result) {
+    if (err) return next(err);
+    res.status(200).send('Item Added: ' + newItem.itemid);
+  });
+}
+
+module.exports.deleteItem = function (req, res, next) {
+  var newDelItem = new delItem(req.query);
+  db.items.remove(newDelItem, function (err){
+    if (err) return next(err);
+    res.status(200).send('Item Removed');
+  });
+}
+
+module.exports.addMultipleItems = function (req, res, next) {
+  var blob = '';
+
+  req.on('data',function (chunk){
+    blob += chunk;
+  });
+
+  req.on('end',function(){
+    var newItems = JSON.parse(blob);
+    var rejectedItems = [];
+    async.eachSeries(newItems,function (newItem, nextItem) {
+      
+      var item = new item(extend(newItem, {
+        owner: req.query.name
+      }));
+
+      db.items.findAndModify({
+        query: { itemid: newItemObj.itemid },
+        update: newItemObj,
+        upsert: true
+      }, nextItem);
+
+    },function (err){
+      if (err) return next(err);
+      res.status(200).send('Items Added Successfully');
+    });
+  });
+}
+
+function getTodaysDate() {    
+  return {
+    year: moment().year(),
+    day: moment().day(),
+    month: moment().month() + 1,
+    one_month_back: moment().subtract('month',1).month() + 1,
+    one_month_back_yr: moment().subtract('month',1).year(),
+    two_month_back: moment().subtract('month',2).month() + 1,
+    two_month_back_yr: moment().subtract('month',2).year()
+  }
+}
+
+module.exports.getInit = function (req, res, next) {
+
+  var _date = getTodaysDate();
+
+  async.parallel({
+    categories: function (cb) {
+      User.findOne({ name: req.query.name }, function (err, user) {
+        cb(err, user.categories);
+      });
+    },
+
+    items: function (cb) {
+      var query_upper_bound = (_date.year * 100) + _date.month;
+      var query_lower_bound = (_date.two_month_back_yr * 100) + _date.two_month_back;
+
+      var options = {
+        owner: req.query.name, 
+        query_short: {
+          $gte : query_lower_bound, 
+          $lte: query_upper_bound
         }
-    })
-}
+      };
 
-module.exports.deleteItem = function (req, res, query) {
-  helpers.validateSession(query.name, query.sess, function (ex) {
-    if (!ex) {
-      helpers.resondInsufficient(req, res, "failed auth at deleteItem");
-      return;
-    } else {
-      var newDelItem = new delItem(query);
-      db.items.remove(newDelItem,function(err,r){
-        if (err) {
-          res.writeHead(500, { 'Content-Type': 'text/plain' });
-          res.end('Error removing');
-          return
-        } else {
-          res.writeHead(200, { 'Content-Type': 'text/plain' });
-          res.end('Item Removed');
-          return
-        }
-      })
-    }
-  })
-}
+      db.items.find(options, function (err, items) {
+        if (err) return cb(err);
 
-module.exports.addMultipleItems = function (req,res,query){
-  helpers.validateSession(query.name,query.sess,function(ex){
-    if (!ex){
-      helpers.resondInsufficient(req,res,"failed auth at addMultipleItems")
-      return;
-    } else {
-      var blob = '';
-      req.on('data',function(chunk){
-        blob += chunk;
-      })
-      req.on('end',function(){
-        var newItems = JSON.parse(blob);
-        var rejectedItems = [];
-        async.eachSeries(newItems,function(newItem,callback){
-          newItem.isflagged = false;
-          newItem.comment = '';
-          newItem.name = query.name;
-          var newItemObj = new item(newItem);
-          console.log(newItemObj)
-                    args = {
-                        'query': {itemid: newItemObj.itemid},
-                        'update': newItemObj,
-                        'upsert':true
-                    }
-          db.items.findAndModify(args,function(err,r){
-                    if (err) {
-                      rejectedItems.push(newItemObj);
-                        callback(1);
-                    } else {
-                        callback(null)
-                    }
-                })
-        },function(err){
-          if (err) {
-                      res.writeHead(500, { 'Content-Type': 'application/json' });
-                      res.end(JSON.stringify({rejected_items: rejectedItems}));
-                      return
-                  } else {
-                      res.writeHead(200, { 'Content-Type': 'text/plain' });
-                      res.end('Items Added Successfully');
-                      return
-                  }
-        })
-      res.writeHead(200);
-      res.end();
+        items = items.forEach(function (elem) {
+          elem.amt = (elem.amt / 100).toFixed(2);
+        });
+
+        cb(null, items);
       });
     }
+  }, function (err, result) {
+    if (err) return next(err);
+    res.status(200).json(extend(result, {
+      date: _date
+    }));                        
   });
 }
 
-module.exports.getIncomePerDay = function (req, res, query){
-  helpers.validateSession(query.name, query.sess, function (val) {
-    if (!val) {
-      helpers.resondInsufficient(req, res, "failed auth at getIncomePerDay");
-      return;
-    } else {
-      stats.incomePerDay(query,function(err,result){
-        if (err) {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({}));
-        } else {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify(result));
-        }
-      })
-    }
-  });
-}
+module.exports.getMonth = function (req, res, next) {
+  var args = {
+    owner: req.query.name,
+    year: parseInt(req.query.year),
+    month: parseInt(req.query.month)
+  };
+  db.items.find(args, function (err, items) {
+    if (err) return next(err);
 
-function setTodaysDate() {    
-    todays_date = {
-        year: moment().year(),
-        day: moment().day(),
-        month: moment().month() + 1,
-        one_month_back: moment().subtract('month',1).month() + 1,
-        one_month_back_yr: moment().subtract('month',1).year(),
-        two_month_back: moment().subtract('month',2).month() + 1,
-        two_month_back_yr: moment().subtract('month',2).year()
-    }
-}
-
-module.exports.getInit = function (req, res, query) {
-  helpers.validateSession(query.name, query.sess, function (val) {
-    if (!val) {
-      helpers.resondInsufficient(req, res, "failed auth at getInit");
-      return;
-    } else {
-      setTodaysDate();
-      var return_ob = {};
-      return_ob.date = JSON.parse(JSON.stringify(todays_date));
-      return_ob.items = [];
-      return_ob.categories = [];
-
-      async.parallel([
-        function(cb){
-          User.findOne({ name: query.name },function (err, user) {
-            if (err) {
-              cb(err)
-            } else if (typeof user.categories == 'undefined') {
-              cb(null);
-            } else {
-              return_ob.categories = user.categories;
-              cb(null);
-            }
-          });
-        },
-        function(cb){
-          var query_upper_bound = (todays_date.year * 100) + todays_date.month;
-          var query_lower_bound = (todays_date.two_month_back_yr * 100) + todays_date.two_month_back;
-
-          console.log(query_upper_bound,query_lower_bound);
-
-          db.items.find({owner: query.name, query_short: {$gte : query_lower_bound, $lte: query_upper_bound}},function(err,itemIds){
-            if (err) {
-              cb('error!')
-            } else {
-              console.log('getting items')
-              async.each(itemIds,function(itemid,cbb){
-                console.log('finding '+itemid.itemid);
-                db.items.findOne({itemid:itemid.itemid},function(err,thisItem){
-                  thisItem.amt = (thisItem.amt/100).toFixed(2);
-                  return_ob.items.push(thisItem)
-                  cbb(null);
-                })
-              },function(err){
-                if (err) {
-                  cb('error!')
-                } else {
-                  cb(null);
-                }
-              })
-            }
-          })
-        }],
-        function(err,results){
-          if (err){
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end(err.toString());
-          } else {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify(return_ob));                        
-          }
-        })
-    }
-  })
-}
-
-module.exports.getMonth = function (req, res, query) {
-  helpers.validateSession(query.name, query.sess, function (val) {
-    if (!val) {
-      helpers.resondInsufficient(req, res, "failed auth at getMonth");
-      return;
-    } else {
-      var return_ob = []
-      var args = {
-        owner:query.name,
-        year:parseInt(query.year),
-        month:parseInt(query.month)
-      }
-      db.items.find(args,function(err,pointers){
-        if (err) {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({}));
-        } else {
-          console.log(pointers);
-          console.log('getting items')
-          async.each(pointers,function(thisPointer,cbb){
-            console.log('finding '+thisPointer.itemid);
-            db.items.findOne({itemid:thisPointer.itemid},function(err,thisItem){
-              thisItem.amt = (thisItem.amt/100).toFixed(2);
-              return_ob.push(thisItem)
-              cbb(null);
-            })
-          },function(err){
-            if (err) {
-              res.writeHead(500, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({}));
-            } else {
-              res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({items: return_ob}));
-            }
-          })
-        }
-      })
-    }
+    items = items.forEach(function (elem) {
+      elem.amt = (elem.amt / 100).toFixed(2);
+    });
   });
 }

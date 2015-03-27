@@ -1,129 +1,90 @@
 var User = require('mongoose').model('User')
-, helpers = require('./../helpers')
 , databaseUrl = process.env.MONGOLAB_URI || "tinybudget"
 , collections = ["sessions"]
 , db = require("mongojs").connect(databaseUrl, collections)
+, crypto = require('crypto')
+, extend = require('util')._extend;
 
-module.exports.login = function (req, res, query) {
-  User.findOne({ name: query.name }, function (err, user) {
-    if (err) return helpers.handleError(req, res, err);
+module.exports.login = function (req, res, next) {
+  User.findOne({ name: req.query.name }, function (err, user) {
+    if (err) return next(err);
 
     if (!user) {
-      res.writeHead(400, { 'Content-Type': 'text/plain' });
-      res.end('User not found');
-      return;
+      return res.status(400).send('User not found');
     }
 
-
-    if (!user.authenticate(query.pass)) {
-      console.log(query.pass)
-      res.writeHead(400, { 'Content-Type': 'text/plain' });
-      res.end('Invalid Username or Password');
-      return;
+    if (!user.authenticate(req.query.pass)) {
+      return next(new Error('Invalid Username or Password'));
     }
 
-    helpers.requestHash(function(hash){
+  
+    crypto.randomBytes(16, function (err, buf) {
+      if (err) return next(err);
+
+      var token = buf.toString('hex');
+
       db.sessions.findAndModify({
         query: {
-          user: query.name
+          user: req.query.name
         },
         update: {
           $set: {
-            session: hash
+            token: token
           }
         },
         upsert: true
       }, function (err) {
-        if (err) return helpers.handleError(req, res, err);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ sessionid: hash })); 
+        if (err) return next(err);
+        res.status(200).json({ sessionid: token }); 
       });
     });
   });
 }
 
-module.exports.logout = function (req, res, query) {
-  db.sessions.remove({ user:query.name }, function (err, affected){
-    if (err) return helpers.handleError(req, res, err);
+module.exports.logout = function (req, res, next) {
+  db.sessions.remove({ user: req.query.name }, function (err, affected) {
+    if (err) return next(err);
     if (!affected) {
-      res.writeHead(400, { 'Content-Type': 'text/plain' });
-      return res.end('No session found');
+      return next(new Error('No session found'));
     }
-
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Logged Out');
+    res.status(200).send('Logged Out');
   })
 }
 
-module.exports.createUser = function (req, res, query) {
+module.exports.createUser = function (req, res, next) {
   User.create({ 
-    email: query.email,
-    name: query.name,
-    password: query.pass,
+    email: req.query.email,
+    name: req.query.name,
+    password: req.query.pass,
   }, function (err) {
-    if (err) return helpers.handleError(req, res, err);
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Success! created account for ' + query.name);
+    if (err) return next(err);
+    res.status(200).send('Success! created account for ' + req.query.name);
   });
 }
 
-module.exports.changeEmail = function (req, res, q){
-  helpers.validateSession(q.name, q.sess, function (ex) {
-    if (!ex) {
-      helpers.resondInsufficient(req, res, "failed auth at changePass");
-      return
-    } else {
-      User.load({ name: q.name }, function (err, user) {
-        if (err) return helpers.handleError(req, res, err);
+module.exports.update = function (req, res, next) {
+  User.load({ name: req.query.name }, function (err, user) {
+    if (err) return next(err);
 
-        if (!user) {
-          res.writeHead(500, { 'Content-Type': 'text/plain' });
-          res.end('Could not find user '+q.name);
-          return
-        }
-
-        user.email = q.email;
-
-        user.save(function (err) {
-          if (err) {
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end(err.toString());
-            return
-          }
-
-          res.writeHead(200, { 'Content-Type': 'text/plain' });
-          res.end('Email successfully changed');
-        });
-      });
+    if (!user) {
+      return next(new Error('Could not find user ' + req.query.name));      
     }
-  })
+
+    user = extend(user, req.body);
+
+    user.save(function (err) {
+      if (err) return next(err);
+      res.status(200).send('User Updated');
+    });
+  });
 }
 
-module.exports.changePass = function (req, res, q) {
-  helpers.validateSession(q.name, q.sess, function (ex) {
-    if (!ex) {
-      helpers.resondInsufficient(req, res, "failed auth at changePass");
-      return
-    } else {
+module.exports.changeEmail = function (req, res, next) {
+  req.body = { email: req.query.email }
+  return module.exports.update(req, res, next);
+}
 
-      User.load({ name: q.name }, function (err, user) {
-        if (err) return helpers.handleError(req, res, err);
-
-        if (!user) {
-          res.writeHead(500, { 'Content-Type': 'text/plain' });
-          res.end('Could not find user '+q.name);
-          return
-        }
-
-        user.password = q.newPass;
-
-        user.save(function (err) {
-          if (err) return helpers.handleError(req, res, err);
-
-          res.writeHead(200, { 'Content-Type': 'text/plain' });
-          res.end('Pass successfully changed');
-        });
-      });
-    }
-  });
+module.exports.changePass = function (req, res, next) {
+  req.body = { password: req.query.newPass }
+  return module.exports.update(req, res, next);
 }

@@ -12,13 +12,13 @@ module.exports.validateSession = function(req, res, next) {
   if (req.query.name === 'demo') return next()
 
   // regular session validation
-  db.sessions.findOne({ user:req.query.name }, function (ex, user) {
-    if (user == null) {
-      return next(new Error('Not Authorized'));
+  db.sessions.findOne({ user: req.query.name }, function (ex, session) {
+    if (session == null) {
+      return res.status(403).send('Not Authorized');
     }
 
-    if (user.session !== req.query.sess) {
-      return next(new Error('Not Authorized'));
+    if (session.token !== req.query.sess) {
+      return res.status(403).send('Not Authorized');
     }
 
     return next();

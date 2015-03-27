@@ -14,15 +14,23 @@ module.exports = function (app) {
   app.get('/changeEmail', validateSession, users.changeEmail);
 
   //items
-  app.get('/addItem', validateSession, items.add);
-  app.get('/addMultipleItems', validateSession, items.addMultiple);
+  app.get('/addItem', validateSession, items.addItem);
+  app.get('/addMultipleItems', validateSession, items.addMultipleItems);
   app.get('/deleteItem', validateSession, items.deleteItem);
   app.get('/getInit', validateSession, items.getInit);
   app.get('/getMonth', validateSession, items.getMonth);
-  app.get('/getIncomePerDay', validateSession, items.getIncomePerDay);
   
   //categories
   app.get('/addCategory', validateSession, categories.add);
-  app.get('/deleteCatefory', validateSession, categories.remove);
+  app.get('/deleteCategory', validateSession, categories.remove);
   app.get('/getCategoryTotal', validateSession, categories.getTotals);
+
+  app.use(function (err, req, res, next) {
+    console.error(err.stack);
+    res.status(500).send(err.toString());
+  });
+
+  app.use(function (req, res) {
+    res.status(404).send("Not Found");
+  })
 }

@@ -1,7 +1,7 @@
 
 process.env.MONGOLAB_URI = 'mongodb://localhost/noobjs_test';
 
-var app = require(__dirname + '/../budgetapp');
+var app = require(__dirname + '/../app');
 var supertest = require('supertest');
 var agent = supertest.agent(app);
 var assert = require('assert');
@@ -176,8 +176,8 @@ describe('budgetApp', function () {
 
     it('Should verify session has ended by failing', function (done) {
       agent.get('/addCategory?name=test&cat=test&sess=' + session)
-        .expect(400)
-        .expect(/failed auth/)
+        .expect(403)
+        .expect(/Not Authorized/)
         .end(done);
     });
   });

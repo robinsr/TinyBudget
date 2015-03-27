@@ -5,13 +5,17 @@
     "type": "git",
     "url": "http://github.com/isaacs/npm.git"
   },
+  "scripts": {
+    "start": "node app.js",
+    "test": "mocha -R spec test/index.js"
+  },
   "dependencies": {
     "async": "*",
     "crypto": "0.0.3",
+    "express": "^4.12.3",
     "moment": "*",
     "mongojs": "*",
-    "mongoose": "^4.0.0",
-    "qs": "*"
+    "mongoose": "^4.0.0"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
@@ -19,6 +23,7 @@
     "grunt-contrib-jshint": "~0.7.1",
     "grunt-contrib-uglify": "~0.2.5",
     "grunt-contrib-watch": "~0.5.3",
-    "supertest": "^0.15.0"
+    "supertest": "^0.15.0",
+    "qs": "*"
   }
 }
