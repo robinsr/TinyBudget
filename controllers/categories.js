@@ -1,7 +1,4 @@
-var databaseUrl = process.env.MONGOLAB_URI || "tinybudget"
-, collections = ["users"]
-, db = require("mongojs").connect(databaseUrl, collections)
-, async = require('async')
+var async = require('async')
 , moment = require('moment')
 , mongoose = require('mongoose')
 , User = mongoose.model('User');
@@ -53,22 +50,24 @@ module.exports.getTotals = function (req, res, next) {
     conditions.year = parseInt(req.query.year);
   } 
 
-  db.items.group({
-    key: { cat:true },
-    cond: conditions,
-    initial: { items:0, amt:0, likely_day:0, avg:0 },
-    reduce: function (doc, agg) {
-      agg.items += 1;
-      agg.amt += parseInt(doc.amt);
-      agg.likely_day += parseInt(doc.day);
-    },
-    finalize: function (agg) {
-      agg.avg = parseFloat((agg.amt/100)/agg.items).toFixed(2);
-      agg.amt = (agg.amt/100).toFixed(2);
-      agg.likely_day = parseInt(agg.likely_day/agg.items);
-    }
-  }, function (err, result){
-    if (err) return next(err);
-    res.status(200).send(result);
+  Item.aggregate()
+    .group({
+      key: { cat:true },
+      cond: conditions,
+      initial: { items:0, amt:0, likely_day:0, avg:0 },
+      reduce: function (doc, agg) {
+        agg.items += 1;
+        agg.amt += parseInt(doc.amt);
+        agg.likely_day += parseInt(doc.day);
+      },
+      finalize: function (agg) {
+        agg.avg = parseFloat((agg.amt/100)/agg.items).toFixed(2);
+        agg.amt = (agg.amt/100).toFixed(2);
+        agg.likely_day = parseInt(agg.likely_day/agg.items);
+      }
+    })
+    .exec(function (err, result){
+      if (err) return next(err);
+      res.status(200).send(result);
   });
 }

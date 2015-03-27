@@ -1,8 +1,6 @@
-var User = require('mongoose').model('User')
-, databaseUrl = process.env.MONGOLAB_URI || "tinybudget"
-, collections = ["sessions"]
-, db = require("mongojs").connect(databaseUrl, collections)
-, crypto = require('crypto')
+var mongoose = require('mongoose')
+, User = mongoose.model('User')
+, Session = mongoose.model('Session')
 , extend = require('util')._extend;
 
 module.exports.login = function (req, res, next) {
@@ -17,32 +15,19 @@ module.exports.login = function (req, res, next) {
       return next(new Error('Invalid Username or Password'));
     }
 
-  
-    crypto.randomBytes(16, function (err, buf) {
+    Session.findOne({ name: req.query.name }, function (err, session) {
       if (err) return next(err);
-
-      var token = buf.toString('hex');
-
-      db.sessions.findAndModify({
-        query: {
-          user: req.query.name
-        },
-        update: {
-          $set: {
-            token: token
-          }
-        },
-        upsert: true
-      }, function (err) {
+      if (session) return res.status(200).json({ sessionid: session.token }); 
+      Session.create({ name: req.query.name }, function (err, session) {
         if (err) return next(err);
-        res.status(200).json({ sessionid: token }); 
+        res.status(200).json({ sessionid: session.token }); 
       });
     });
   });
 }
 
 module.exports.logout = function (req, res, next) {
-  db.sessions.remove({ user: req.query.name }, function (err, affected) {
+  Session.collection.remove({ name: req.query.name }, function (err, affected) {
     if (err) return next(err);
     if (!affected) {
       return next(new Error('No session found'));

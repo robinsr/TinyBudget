@@ -1,8 +1,6 @@
-var databaseUrl = process.env.MONGOLAB_URI || "tinybudget"
-  , collections = ["sessions"]
-  , db = require("mongojs").connect(databaseUrl, collections)
-  , mongoose = require('mongoose')
-  , User = mongoose.model('User');
+var mongoose = require('mongoose')
+  , User = mongoose.model('User')
+  , Session = mongoose.model('Session');
 
 module.exports.validateSession = function(req, res, next) {
   if (!req.query.name || !req.query.sess) {
@@ -14,9 +12,9 @@ module.exports.validateSession = function(req, res, next) {
   if (req.query.name === 'demo') return next()
 
   // regular session validation
-  db.sessions.findOne({ user: req.query.name }, function (ex, session) {
-    if (session == null) {
-      return res.status(403).send('Not Authorized');
+  Session.findOne({ name: req.query.name }, function (ex, session) {
+    if (!session) {
+      return res.status(401).send('Not Logged In');
     }
 
     if (session.token !== req.query.sess) {

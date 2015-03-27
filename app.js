@@ -5,6 +5,7 @@ var mongoose = require('mongoose')
 
 require(__dirname + '/models/User');
 require(__dirname + '/models/Item');
+require(__dirname + '/models/Session');
 
 
 var connectMongoose = function () {
@@ -29,6 +30,6 @@ var port = process.env.PORT || 3000;
 
 app.listen(port);
 
-console.log('Prod - listening on ' + port);
+console.log('Server listening on port ' + port);
 
 module.exports = app;

@@ -15,6 +15,7 @@ var session, user;
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
 var Item = mongoose.model('Item');
+var Session = mongoose.model('Session');
 
 function clearDb (done) {
   async.parallel([
@@ -23,11 +24,14 @@ function clearDb (done) {
     },
     function (cb) {
       Item.collection.remove(cb);
+    },
+    function (cb) {
+      Session.collection.remove(cb);
     }
   ], done);
 }
 
-describe('budgetApp', function () {
+describe('Tiny Budget', function () {
 
   before(clearDb);
 
@@ -246,8 +250,8 @@ describe('budgetApp', function () {
 
     it('Should verify session has ended by failing', function (done) {
       agent.get('/addCategory?name=test&cat=test&sess=' + session)
-        .expect(403)
-        .expect(/Not Authorized/)
+        .expect(401)
+        .expect(/Not Logged In/)
         .end(done);
     });
   });
