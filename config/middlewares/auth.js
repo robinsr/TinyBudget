@@ -1,6 +1,8 @@
 var databaseUrl = process.env.MONGOLAB_URI || "tinybudget"
   , collections = ["sessions"]
-  , db = require("mongojs").connect(databaseUrl, collections);
+  , db = require("mongojs").connect(databaseUrl, collections)
+  , mongoose = require('mongoose')
+  , User = mongoose.model('User');
 
 module.exports.validateSession = function(req, res, next) {
   if (!req.query.name || !req.query.sess) {
@@ -21,6 +23,11 @@ module.exports.validateSession = function(req, res, next) {
       return res.status(403).send('Not Authorized');
     }
 
-    return next();
+    User.findOne({ name: req.query.name }, function (err, user) {
+      if (err) return next(err);
+      if (!user) return res.status(403).send('Not Authorized');
+      req.user = user;
+      next();
+    });
   });
 }

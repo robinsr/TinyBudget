@@ -1,22 +1,35 @@
 
 process.env.MONGOLAB_URI = 'mongodb://localhost/noobjs_test';
 
-var app = require(__dirname + '/../app');
+var app = require('./../app');
+var fixtures = require('./fixtures');
 var supertest = require('supertest');
 var agent = supertest.agent(app);
 var assert = require('assert');
 var async = require('async');
 var qs = require('qs');
-var session;
+var moment = require('moment');
+var extend = require('util')._extend;
+var session, user;
 
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
+var Item = mongoose.model('Item');
+
+function clearDb (done) {
+  async.parallel([
+    function (cb) {
+      User.collection.remove(cb);
+    },
+    function (cb) {
+      Item.collection.remove(cb);
+    }
+  ], done);
+}
 
 describe('budgetApp', function () {
 
-  before(function (done) {
-    User.collection.remove(done);
-  });
+  before(clearDb);
 
   describe('GET /', function () {
     it('Should create a user', function (done) {
@@ -44,6 +57,7 @@ describe('budgetApp', function () {
       User.findOne({ email: "test" }, function (err, result) {
         if (err) return done(err);
         if (!result) return done(new Error('User not created'));
+        user = result;
         done();
       });
     });
@@ -123,24 +137,20 @@ describe('budgetApp', function () {
   describe('GET /addItem', function () {
     it("should add an item associated with the test user", function (done) {
 
-      var params = qs.stringify({
-        name: "test",
+      var params = qs.stringify(extend(fixtures.items[0], {
         sess: session,
-        year: 2015,
-        month: 11,
-        day: 11,
-        amt: 12.34,
-        cat: 'uncategorized',
-        desc: 'An item description',
-        itemid: '1234abcd'
-      });
+      }));
 
       agent.get('/addItem?' + params)
         .expect(200)
         .end(function (err, res) {
           if (err) return done(err);
-          // verify item saved with mongoose
-          done();
+          
+          Item.findOne({ itemid: '1234abcd' }, function (err, item) {
+            if (err) return done(err);
+            if (!item) return done(new Error('Item not found in database'));
+            done();
+          });
         });
     });
   });
@@ -161,7 +171,67 @@ describe('budgetApp', function () {
         .expect(200)
         .end(function (err, res) {
           if (err) return done(err);
-          // verify item was removed with mongoose
+          Item.findOne({ itemid: '1234abcd' }, function (err, item) {
+            if (err) return done(err);
+            if (item) return done(new Error('Item remains in database'));
+            done();
+          });
+        });
+    });
+  });
+
+  describe('GET /getInit', function () {
+    
+    before(function (done) {
+      async.parallel([
+        function (cb) {
+          async.each(fixtures.items, function (item, nextItem) {
+            Item.create(extend(item, { owner: user }), nextItem);
+          }, cb);
+        },
+        function (cb) {
+          User.findOneAndUpdate({ name: 'test' }, {
+            categories: fixtures.categories
+          }, cb);
+        }
+      ], done);
+    });
+    
+    it('Should return users items for three months, categories, and date info', function (done) {
+      var params = {
+        name: 'test',
+        sess: session
+      };
+
+      agent.get('/getInit?' + qs.stringify(params))
+        .expect(200)
+        .end(function (err, res) {
+          if (err) return done(err);
+          assert.ok(res.body.items, 'No items');
+          assert.ok(res.body.categories, 'No categories');
+          assert.ok(res.body.date, 'No date info');
+          assert.equal(res.body.items.length, 3, 'Items wrong length ' + res.body.items.length);
+          assert.equal(res.body.categories.length, 3, 'Categories wrong length '+ res.body.categories.length);
+          done();
+        });
+    });
+  });
+
+  describe('GET /getMonth', function () {
+    it('Should return items only in a certain month range', function (done) {
+      var params = {
+        name: 'test',
+        sess: session,
+        year: moment().year(),
+        month: moment().month()
+      };
+
+      agent.get('/getInit?' + qs.stringify(params))
+        .expect(200)
+        .end(function (err, res) {
+          if (err) return done(err);
+          assert.ok(res.body.items, 'No items');
+          assert.equal(res.body.items.length, 3, 'Items wrong length ' + res.body.items.length);
           done();
         });
     });
@@ -182,11 +252,5 @@ describe('budgetApp', function () {
     });
   });
 
-  after(function (done) {
-    async.parallel([
-      function (cb){
-        User.collection.remove(cb);
-      }
-    ], done);
-  });
+  after(clearDb);
 });

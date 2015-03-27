@@ -26,7 +26,7 @@ module.exports = function (app) {
   app.get('/getCategoryTotal', validateSession, categories.getTotals);
 
   app.use(function (err, req, res, next) {
-    console.error(err.stack);
+    console.error(err);
     res.status(500).send(err.toString());
   });
 

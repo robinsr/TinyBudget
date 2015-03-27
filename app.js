@@ -1,17 +1,21 @@
 var mongoose = require('mongoose')
   , express = require('express')
-  , app = express();
+  , app = express()
+  , config = require('config');
 
 require(__dirname + '/models/User');
+require(__dirname + '/models/Item');
+
 
 var connectMongoose = function () {
-    mongoose.connect(process.env.MONGOLAB_URI , { 
-        server: { 
-            socketOptions: { 
-                keepAlive: 1 
-            } 
-        }
-    });
+  console.log('Connecting to mongo at ' + config.db);
+  mongoose.connect(config.db, { 
+    server: { 
+      socketOptions: { 
+        keepAlive: 1 
+      } 
+    }
+  });
 };
 connectMongoose();
 
