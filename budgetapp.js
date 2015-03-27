@@ -1,17 +1,18 @@
-var app = require('http').createServer(handler)
-  , path = require('path')
+var path = require('path')
   , fs = require('fs')
   , databaseUrl = process.env.MONGOLAB_URI || "tinybudget"
   , collections = ["users", "items","sessions"]
   , db = require("mongojs").connect(databaseUrl, collections)
   , nodeurl = require('url')
-  , crypto = require('crypto')
   , qs = require('qs')
   , util = require('util')
   , moment = require('moment')
   , async = require('async')
   , stats = require('./dbScripts/stats')
-  , mongoose = require('mongoose');
+  , mongoose = require('mongoose')
+  , validateSession = require('./helpers').validateSession
+  , requestHash = require('./helpers').requestHash;
+  //, express = require('express');
 
 require(__dirname + '/models/User');
 
@@ -81,43 +82,14 @@ function setTodaysDate() {
 
     console.log(util.inspect(todays_date))
 }
-function requestHash(cb) {
-    crypto.randomBytes(16, function (ex, buf) {
-        if (ex) throw ex;
-        cb(buf.toString('hex'));
-        return;
-    })
-}
+
 function respondInsufficient(req, res, message) {
     if (message) { console.log(message); }
     res.writeHead(400, { 'Content-Type': 'text/plain' });
     res.end(message);
     return;
 }
-function validateSession(n, s, cb) {
-    // so that demos work regardless of sessions. its a problem if there are two people
-    // trying to use the demo account at once
-    if (n === 'demo') {
-        console.log('demo session ' + s);
-        cb(true);
 
-        // regular session validation
-    } else {
-        db.sessions.findOne({user:n}, function (ex, r) {
-            console.log(r);
-            if (r == null) {
-                cb(false);
-                return;
-            } else if (r.session == s) {
-                cb(true);
-                return;
-            } else {
-                cb(false);
-                return;
-            }
-        });
-    }
-}
 
 function getCategoryTotals(req, res, query){
     validateSession(query.name, query.sess, function (val) {
@@ -430,124 +402,10 @@ function logout(req, res, query) {
         }
     })
 }
-function login(req, res, query) {
-    User.findOne({ name: query.name }, function (err, user) {
-        if (err) {
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end(err.toString());
-            return 
-        }
-
-        if (!user) {
-            res.writeHead(400, { 'Content-Type': 'text/plain' });
-            res.end('User not found');
-            return;
-        }
 
 
-        if (!user.authenticate(query.pass)) {
-            console.log(query.pass)
-            res.writeHead(400, { 'Content-Type': 'text/plain' });
-            res.end('Invalid Username or Password');
-            return;
-        }
 
-        requestHash(function(hash){
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ sessionid: hash })); 
-            db.sessions.insert({user:query.name,session:hash})
-        });
-    });
-}
 
-function createUser(req, res, query) {
-    console.log(query)
-    User.create({ 
-        email: query.email,
-        name: query.name,
-        password: query.pass,
-    }, function (err) {
-        if (err) {
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end(err.toString());
-            return;
-        } else {
-            res.writeHead(200, { 'Content-Type': 'text/plain' });
-            res.end('Success! created account for ' + query.name);
-        }
-    });
-}
-function changeEmail(req,res,q){
-    validateSession(q.name, q.sess, function (ex) {
-        if (!ex) {
-            respondInsufficient(req, res, "failed auth at changePass");
-            return
-        } else {
-            User.load({ name: q.name }, function (err, user) {
-                if (err) {
-                    res.writeHead(500, { 'Content-Type': 'text/plain' });
-                    res.end(err.toString());
-                    return
-                }
-
-                if (!user) {
-                    res.writeHead(500, { 'Content-Type': 'text/plain' });
-                    res.end('Could not find user '+q.name);
-                    return
-                }
-
-                user.email = q.email;
-
-                user.save(function (err) {
-                    if (err) {
-                        res.writeHead(500, { 'Content-Type': 'text/plain' });
-                        res.end(err.toString());
-                        return
-                    }
-
-                    res.writeHead(200, { 'Content-Type': 'text/plain' });
-                    res.end('Email successfully changed');
-                });
-            });
-        }
-    })
-}
-function changePass(req, res, q) {
-    validateSession(q.name, q.sess, function (ex) {
-        if (!ex) {
-            respondInsufficient(req, res, "failed auth at changePass");
-            return
-        } else {
-
-            User.load({ name: q.name }, function (err, user) {
-                if (err) {
-                    res.writeHead(500, { 'Content-Type': 'text/plain' });
-                    res.end(err.toString());
-                    return
-                }
-
-                if (!user) {
-                    res.writeHead(500, { 'Content-Type': 'text/plain' });
-                    res.end('Could not find user '+q.name);
-                    return
-                }
-
-                user.password = q.newPass;
-
-                user.save(function (err) {
-                    if (err) {
-                        res.writeHead(500, { 'Content-Type': 'text/plain' });
-                        res.end(err.toString());
-                        return
-                    }
-
-                    res.writeHead(200, { 'Content-Type': 'text/plain' });
-                    res.end('Pass successfully changed');
-                });
-            });
-        }
-    });
-}
 
 // handles static content
 function serveStatic(req, res) {
@@ -627,6 +485,8 @@ function sanitizeString(req, res, next) {
     }
 }
 
+var userController = require('./controllers/users');
+
 // handles incoming requests
 function handler(req, res) {
     sanitizeString(req, res, function (ret) {
@@ -644,29 +504,25 @@ function handler(req, res) {
 
             if (p == 'newUser') {
                 if (q.name && q.pass) {
-                    createUser(req, res, q);
-                    return;
+                    return userController.createUser(req, res, q);
                 } else {
                     respondInsufficient(req, res, 'Requires name and pass');
                 }
             } else if (p == 'changePass') {
                 if (q.name && q.sess && q.oldPass && q.newPass) {
-                    changePass(req, res, q);
-                    return;
+                    return userController.changePass(req, res, q);
                 } else {
                     respondInsufficient(req, res, 'Requires name and pass');
                 }
             } else if (p == 'changeEmail') {
                 if (q.name && q.sess && q.email) {
-                    changeEmail(req, res, q);
-                    return;
+                    return userController.changeEmail(req, res, q);
                 } else {
                     respondInsufficient(req, res, 'Requires name and email');
                 }
             } else if (p == 'login') {
                 if (q.name && q.pass) {
-                    login(req, res, q);
-                    return;
+                    return userController.login(req, res, q);
                 } else {
                     respondInsufficient(req, res, 'Requires name and pass');
                 }
