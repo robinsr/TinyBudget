@@ -31,9 +31,9 @@ function delItem(obj){
 }
 
 module.exports.addItem = function (req, res, query) {
-    validateSession(query.name, query.sess, function (ex) {
+    helpers.validateSession(query.name, query.sess, function (ex) {
         if (!ex) {
-            helpers.helpers.resondInsufficient(req, res, "failed auth at addItem");
+            helpers.resondInsufficient(req, res, "failed auth at addItem");
             return
         } else {
             var newItem = new item(query);

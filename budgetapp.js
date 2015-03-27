@@ -8,6 +8,7 @@ var path = require('path')
   , util = require('util')
   , async = require('async')
   , mongoose = require('mongoose')
+  , helpers = require('./helpers')
   , validateSession = require('./helpers').validateSession
   , requestHash = require('./helpers').requestHash
   , sanitizeString = require('./helpers').sanitizeString;
