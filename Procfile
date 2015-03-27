@@ -1,1 +1,1 @@
-web: node budgetapp.js
+web: node app.js

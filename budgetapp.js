@@ -10,7 +10,26 @@ var app = require('http').createServer(handler)
   , util = require('util')
   , moment = require('moment')
   , async = require('async')
-  , stats = require('./dbScripts/stats');
+  , stats = require('./dbScripts/stats')
+  , mongoose = require('mongoose');
+
+require(__dirname + '/models/User');
+
+var connectMongoose = function () {
+    mongoose.connect(process.env.MONGOLAB_URI , { 
+        server: { 
+            socketOptions: { 
+                keepAlive: 1 
+            } 
+        }
+    });
+};
+connectMongoose();
+
+mongoose.connection.on('error', console.log);
+mongoose.connection.on('disconnected', connectMongoose);
+
+var User = mongoose.model('User');
 
 var mimeType = {
     '.js': 'text/javascript',
@@ -65,7 +84,6 @@ function setTodaysDate() {
 function requestHash(cb) {
     crypto.randomBytes(16, function (ex, buf) {
         if (ex) throw ex;
-        console.log('randomness=' + buf.toString('hex'))
         cb(buf.toString('hex'));
         return;
     })
@@ -77,8 +95,6 @@ function respondInsufficient(req, res, message) {
     return;
 }
 function validateSession(n, s, cb) {
-    console.log(n, s)
-
     // so that demos work regardless of sessions. its a problem if there are two people
     // trying to use the demo account at once
     if (n === 'demo') {
@@ -88,6 +104,7 @@ function validateSession(n, s, cb) {
         // regular session validation
     } else {
         db.sessions.findOne({user:n}, function (ex, r) {
+            console.log(r);
             if (r == null) {
                 cb(false);
                 return;
@@ -191,55 +208,56 @@ function getInit(req, res, query) {
             return_ob.items = [];
             return_ob.categories = [];
 
-            async.series([function(cb){
-                db.users.findOne({user: query.name},function (err, user) {
-                    if (err) {
-                        cb('error!')
-                    } else if (typeof user.categories == 'undefined') {
-                        cb(null);
-                    } else {
-                        return_ob.categories = user.categories;
-                        cb(null);
-                    }
-                });
-            },
-            function(cb){
-                var query_upper_bound = (todays_date.year * 100) + todays_date.month;
-                var query_lower_bound = (todays_date.two_month_back_yr * 100) + todays_date.two_month_back;
+            async.parallel([
+                function(cb){
+                    User.findOne({ name: query.name },function (err, user) {
+                        if (err) {
+                            cb(err)
+                        } else if (typeof user.categories == 'undefined') {
+                            cb(null);
+                        } else {
+                            return_ob.categories = user.categories;
+                            cb(null);
+                        }
+                    });
+                },
+                function(cb){
+                    var query_upper_bound = (todays_date.year * 100) + todays_date.month;
+                    var query_lower_bound = (todays_date.two_month_back_yr * 100) + todays_date.two_month_back;
 
-                console.log(query_upper_bound,query_lower_bound);
+                    console.log(query_upper_bound,query_lower_bound);
 
-                db.items.find({owner: query.name, query_short: {$gte : query_lower_bound, $lte: query_upper_bound}},function(err,itemIds){
-                    if (err) {
-                        cb('error!')
-                    } else {
-                        console.log('getting items')
-                        async.each(itemIds,function(itemid,cbb){
-                            console.log('finding '+itemid.itemid);
-                            db.items.findOne({itemid:itemid.itemid},function(err,thisItem){
-                                thisItem.amt = (thisItem.amt/100).toFixed(2);
-                                return_ob.items.push(thisItem)
-                                cbb(null);
+                    db.items.find({owner: query.name, query_short: {$gte : query_lower_bound, $lte: query_upper_bound}},function(err,itemIds){
+                        if (err) {
+                            cb('error!')
+                        } else {
+                            console.log('getting items')
+                            async.each(itemIds,function(itemid,cbb){
+                                console.log('finding '+itemid.itemid);
+                                db.items.findOne({itemid:itemid.itemid},function(err,thisItem){
+                                    thisItem.amt = (thisItem.amt/100).toFixed(2);
+                                    return_ob.items.push(thisItem)
+                                    cbb(null);
+                                })
+                            },function(err){
+                                if (err) {
+                                    cb('error!')
+                                } else {
+                                    cb(null);
+                                }
                             })
-                        },function(err){
-                            if (err) {
-                                cb('error!')
-                            } else {
-                                cb(null);
-                            }
-                        })
+                        }
+                    })
+                }],
+                function(err,results){
+                    if (err){
+                        res.writeHead(500, { 'Content-Type': 'text/plain' });
+                        res.end(err.toString());
+                    } else {
+                        res.writeHead(200, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify(return_ob));                        
                     }
                 })
-            }],
-            function(err,results){
-                if (err){
-                    res.writeHead(500, { 'Content-Type': 'text/plain' });
-                    res.end('Server Problems');
-                } else {
-                    res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify(return_ob));                        
-                }
-            })
         }
     })
 }
@@ -400,82 +418,62 @@ function addItem(req, res, query) {
 function logout(req, res, query) {
     db.sessions.remove({user:query.name},function(err,r){
         if (err) {
-            res.writeHead(200, { 'Content-Type': 'text/plain' });
-            res.end('Logged Out');
-        } else {
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end(err.toString());
+            return 
+        } if (!r) {
             res.writeHead(400, { 'Content-Type': 'text/plain' });
             res.end('No session found');
+        } else {
+            res.writeHead(200, { 'Content-Type': 'text/plain' });
+            res.end('Logged Out');
         }
     })
 }
 function login(req, res, query) {
-    db.users.findOne({user:query.name},function(err,result){
-        if (err){
+    User.findOne({ name: query.name }, function (err, user) {
+        if (err) {
             res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end('Server Error');
-        } else if (result == null){
+            res.end(err.toString());
+            return 
+        }
+
+        if (!user) {
             res.writeHead(400, { 'Content-Type': 'text/plain' });
             res.end('User not found');
-        } else {
-            var concat_pass = query.pass + result.salt;
-            var hashed_pass = crypto.createHash('md5').update(concat_pass).digest('hex');
-            if (hashed_pass == result.pass) {
-                return_object = {
-                    email: result.email
-                }
-                db.sessions.findOne({user:query.name},function(err,session){
-                    if (err){
-                        res.writeHead(500, { 'Content-Type': 'text/plain' });
-                        res.end('Server Error');
-                    } else if (session != null) {
-                        return_object.sessionid = session.session;
-                        res.writeHead(200, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify(return_object));
-                    } else {
-                        requestHash(function(hash){
-                            return_object.sessionid = hash;
-                            res.writeHead(200, { 'Content-Type': 'application/json' });
-                            res.end(JSON.stringify(return_object)); 
-                            db.sessions.insert({user:query.name,session:hash})
-                        })
-                    }
-                })
-            } else {
-                res.writeHead(400, { 'Content-Type': 'text/plain' });
-                res.end('Invalid Username or Password');
-                return;
-            }
+            return;
         }
-    })
+
+
+        if (!user.authenticate(query.pass)) {
+            console.log(query.pass)
+            res.writeHead(400, { 'Content-Type': 'text/plain' });
+            res.end('Invalid Username or Password');
+            return;
+        }
+
+        requestHash(function(hash){
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ sessionid: hash })); 
+            db.sessions.insert({user:query.name,session:hash})
+        });
+    });
 }
 
 function createUser(req, res, query) {
-    db.users.findOne({user:query.name},function(err,result){
-        if (err){
+    console.log(query)
+    User.create({ 
+        email: query.email,
+        name: query.name,
+        password: query.pass,
+    }, function (err) {
+        if (err) {
             res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end('Error creating user');
-        } else if (result != null){
-            res.writeHead(400, { 'Content-Type': 'text/plain' });
-            res.end('Account exists for ' + query.name);
+            res.end(err.toString());
+            return;
         } else {
-            requestHash(function (hash_salt) {
-                var hashed_pass_and_salt = crypto.createHash('md5').update(query.pass + hash_salt).digest('hex');
-                db.users.insert({
-                    user: query.name,
-                    email: query.email,
-                    pass: hashed_pass_and_salt,
-                    salt: hash_salt
-                },function (err, rr) {
-                    if (err) {
-                        res.writeHead(500, { 'Content-Type': 'text/plain' });
-                        res.end('Error creating user');
-                        return;
-                    } else {
-                        res.writeHead(200, { 'Content-Type': 'text/plain' });
-                        res.end('Success! created account for ' + query.name);
-                    }
-                });
-            });
+            res.writeHead(200, { 'Content-Type': 'text/plain' });
+            res.end('Success! created account for ' + query.name);
         }
     });
 }
@@ -485,19 +483,32 @@ function changeEmail(req,res,q){
             respondInsufficient(req, res, "failed auth at changePass");
             return
         } else {
-            var args = {
-                'query': {user:q.name},
-                'update': {$set: { email: q.email }}
-            }
-            db.users.findAndModify(args, function(er,result){
-                if (er){
+            User.load({ name: q.name }, function (err, user) {
+                if (err) {
                     res.writeHead(500, { 'Content-Type': 'text/plain' });
-                    res.end('Server Error');
-                } else {
-                    res.writeHead(200, { 'Content-Type': 'text/plain' });
-                    res.end('Pass successfully changed');
+                    res.end(err.toString());
+                    return
                 }
-            })
+
+                if (!user) {
+                    res.writeHead(500, { 'Content-Type': 'text/plain' });
+                    res.end('Could not find user '+q.name);
+                    return
+                }
+
+                user.email = q.email;
+
+                user.save(function (err) {
+                    if (err) {
+                        res.writeHead(500, { 'Content-Type': 'text/plain' });
+                        res.end(err.toString());
+                        return
+                    }
+
+                    res.writeHead(200, { 'Content-Type': 'text/plain' });
+                    res.end('Email successfully changed');
+                });
+            });
         }
     })
 }
@@ -508,37 +519,32 @@ function changePass(req, res, q) {
             return
         } else {
 
-            db.users.findOne({user:q.name},function(er,result){
-                if (er){
+            User.load({ name: q.name }, function (err, user) {
+                if (err) {
                     res.writeHead(500, { 'Content-Type': 'text/plain' });
-                    res.end('Server Error');
-                } else if (result == null){
-                    res.writeHead(400, { 'Content-Type': 'text/plain' });
-                    res.end('Could not find user '+q.name);
-                } else {
-                    var combined = q.oldPass + result.salt;
-                    var hashCheck = crypto.createHash('md5').update(combined).digest('hex');
-                    if (hashCheck == result.pass){
-                        newPass = crypto.createHash('md5').update(q.newPass+result.salt).digest('hex');
-                        var args = {
-                            'query': {user:q.name},
-                            'update': {$set: { pass: newPass }}
-                        }
-                        db.users.findAndModify(args,function(er,result){
-                            if (er){
-                                res.writeHead(500, { 'Content-Type': 'text/plain' });
-                                res.end('Server Error');
-                            } else {
-                                res.writeHead(200, { 'Content-Type': 'text/plain' });
-                                res.end('Pass successfully changed');
-                            }
-                        })
-                    } else {
-                        res.writeHead(400, { 'Content-Type': 'text/plain' });
-                        res.end('Incorrect Password');
-                    }                                
+                    res.end(err.toString());
+                    return
                 }
-            })
+
+                if (!user) {
+                    res.writeHead(500, { 'Content-Type': 'text/plain' });
+                    res.end('Could not find user '+q.name);
+                    return
+                }
+
+                user.password = q.newPass;
+
+                user.save(function (err) {
+                    if (err) {
+                        res.writeHead(500, { 'Content-Type': 'text/plain' });
+                        res.end(err.toString());
+                        return
+                    }
+
+                    res.writeHead(200, { 'Content-Type': 'text/plain' });
+                    res.end('Pass successfully changed');
+                });
+            });
         }
     });
 }
@@ -655,7 +661,7 @@ function handler(req, res) {
                     changeEmail(req, res, q);
                     return;
                 } else {
-                    respondInsufficient(req, res, 'Requires name and pass');
+                    respondInsufficient(req, res, 'Requires name and email');
                 }
             } else if (p == 'login') {
                 if (q.name && q.pass) {
@@ -753,11 +759,7 @@ setTodaysDate();
 
 // parameters for regular port or dev port
 
-var port = process.env.PORT || 3000;
-
-
-app.listen(port);
-console.log('Prod - listening on ' + port);
+module.exports = handler;
 
 
 
