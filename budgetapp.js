@@ -387,25 +387,6 @@ function addItem(req, res, query) {
         }
     })
 }
-function logout(req, res, query) {
-    db.sessions.remove({user:query.name},function(err,r){
-        if (err) {
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end(err.toString());
-            return 
-        } if (!r) {
-            res.writeHead(400, { 'Content-Type': 'text/plain' });
-            res.end('No session found');
-        } else {
-            res.writeHead(200, { 'Content-Type': 'text/plain' });
-            res.end('Logged Out');
-        }
-    })
-}
-
-
-
-
 
 // handles static content
 function serveStatic(req, res) {
@@ -528,8 +509,7 @@ function handler(req, res) {
                 }
             } else if (p == 'logout') {
                 if (q.name) {
-                    logout(req, res, q);
-                    return;
+                    return userController.logout(req, res, q);
                 } else {
                     respondInsufficient(req, res, 'Requires name');
                 }
