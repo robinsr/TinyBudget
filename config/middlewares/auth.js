@@ -7,10 +7,6 @@ module.exports.validateSession = function(req, res, next) {
     return next(new Error('Requires username and session token'));
   }
 
-  // so that demos work regardless of sessions. its a problem if there are two people
-  // trying to use the demo account at once
-  if (req.query.name === 'demo') return next()
-
   // regular session validation
   Session.findOne({ name: req.query.name }, function (ex, session) {
     if (!session) {
