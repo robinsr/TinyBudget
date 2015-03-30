@@ -9,7 +9,7 @@ module.exports.addItem = function (req, res, next) {
   Item.load(req.query.itemid, function (err, item) {
     if (err) return next(err);
     if (item) {
-      item = extend(item.toObject(), req.query);
+      item = extend(item, req.query);
     } else {
       item = new Item(req.query);
     }
