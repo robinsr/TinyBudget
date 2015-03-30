@@ -5118,7 +5118,7 @@ function AppViewModel() {
                                             // check is day, month, and year are acceptable
                                         if ((0 < date[0]) && (date[0] < 13) && (!isNaN(date[0]))) {
                                             if ((0 < date[1]) && (date[1] < 32) && (!isNaN(date[1]))) {
-                                                if ((2011 < date[2]) && (date[2] < 2015) && (!isNaN(date[2]))) {
+                                                if ((2011 < date[2]) && (date[2] < 2100) && (!isNaN(date[2]))) {
                                                     self.input_error("");
                                                     var cat = self.expenseOrPaydayActive() == 'payday' ? 'payday' : self.cat();
                                                     self.userItems.push(new rowitem(false, self.desc(), parsed_input, self.input_date(), cat));
