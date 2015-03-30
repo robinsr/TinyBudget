@@ -41,8 +41,10 @@ app.use(express.static('public'));
  */ 
 require('./config/routes')(app);
 
-app.listen(process.env.PORT || 3000);
-console.log('Server listening on port ' + process.env.PORT || 3000);
+
+var port = process.env.PORT || 3000
+app.listen(port);
+console.log('Server listening on port ' + port);
 
 /*
  * Export for testing
