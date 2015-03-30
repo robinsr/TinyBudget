@@ -26,5 +26,6 @@
     "grunt-contrib-watch": "~0.5.3",
     "supertest": "^0.15.0",
     "qs": "*"
-  }
+  },
+  "engines" : { "node" : "0.10.32" }
 }
