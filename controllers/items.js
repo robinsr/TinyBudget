@@ -88,7 +88,7 @@ module.exports.getInit = function (req, res, next) {
 
 module.exports.getMonth = function (req, res, next) {
   var args = {
-    owner: req.query.name,
+    owner: req.query._id,
     year: parseInt(req.query.year),
     month: parseInt(req.query.month)
   };

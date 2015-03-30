@@ -22,6 +22,9 @@ var itemSchema = new mongoose.Schema({
   date: Date,
   year: Number,
   owner: {type : mongoose.Schema.ObjectId, ref : 'User'}
+},{
+    toObject: { virtuals: true, getters: true },
+    toJSON: { virtuals: true, getters: true }
 });
 
 itemSchema.pre('save', function (next) {
