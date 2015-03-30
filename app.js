@@ -7,9 +7,9 @@ var mongoose = require('mongoose')
   , config = require('config');
 
 // require models
-require('./models/User');
-require('./models/Item');
-require('./models/Session');
+require('./models/user');
+require('./models/item');
+require('./models/session');
 
 
 /*
