@@ -4634,29 +4634,32 @@ var monthName = {
     return {
         fetchMonth: function(month,year,cb){
             tinybudget.viewmodel.loadstatus(1);
-            tinybudgetutils.issue('getMonth', [
-            ['name',tinybudget.viewmodel.user.name],
-            ['sess',tinybudget.viewmodel.user.sess],
-            ['year',year],
-            ['month',month]
-            ], null, function(err,stat,message){
-                
-            if (err || stat == 400) {
-                //console.log('error getMonth')
-            } else {
-                var datai = JSON.parse(message);            
-                var newItems = ko.mapping.fromJS([])
-                ko.mapping.fromJS(datai.items, mapping,newItems);
-                ko.utils.arrayPushAll(tinybudget.viewmodel.userItems, newItems());
-                tinybudget.viewmodel.userItems.valueHasMutated();
-                tinybudget.viewmodel.renderChart();
-                tinybudget.viewmodel.loadstatus(2);
-                tinybudget.viewmodel.loadedMonths.push(month+","+year);
-            }
-            });
+
+            $.ajax({
+                method: 'GET',
+                url: '/getMonth',
+                data: {
+                    name: tinybudget.viewmodel.user.name,
+                    sess: tinybudget.viewmodel.user.sess,
+                    year: year,
+                    month: month
+                },
+                success: function (data) {           
+                    var newItems = ko.mapping.fromJS([])
+                    ko.mapping.fromJS(data.items, mapping, newItems);
+                    ko.utils.arrayPushAll(tinybudget.viewmodel.userItems, newItems());
+                    tinybudget.viewmodel.userItems.valueHasMutated();
+                    tinybudget.viewmodel.renderChart();
+                    tinybudget.viewmodel.loadstatus(2);
+                    tinybudget.viewmodel.loadedMonths.push(month+","+year);
+
+                },
+                error: function (err) {
+                    tinybudget.viewmodel.serverError();
+                }
+            })
         },
         addItemToServer:function(item){
-            //console.log('server.addItemToServer; success is false, 2 or more, false', tinybudget.viewmodel.sorting, tinybudget.viewmodel.loadstatus(), item.loadedFromServer);
             if (tinybudget.viewmodel.sorting === false) {
                 if (tinybudget.viewmodel.loadstatus() > 1) {
                     if (item.loadedFromServer === false) {
@@ -4983,13 +4986,10 @@ function AppViewModel() {
     self.cat = ko.observable(""); 
     self.input_error = ko.observable("");
     self.sorting = false;
-    self.allCategoriesTotal = ko.observable();
-    self.paydayTotal = ko.observable();
     self.showUnspent = ko.observable(false);
     self.unusedCategories = ko.observableArray([]);
     self.categoryHighlight = ko.observable();
-    self.userCategories = ko.mapping.fromJS([]);
-    self.userCategoriesTotals = ko.observableArray([]);
+    self.userCategories = ko.mapping.fromJS([]);   
     self.categoryFeedback = ko.observable();
     self.categoryValidateState = ko.observable();
     self.addCatValue = ko.observable("");
@@ -5014,13 +5014,97 @@ function AppViewModel() {
     self.canCSV = ko.observable(false);
     self.statsCategory = ko.observableArray([])
 
+    /**
+     * allCategoriesTotal
+     * @return {Number}   Total of all items in all categories
+     */
+    self.allCategoriesTotal = ko.computed(function () {
+        return _.chain(self.filteredUserItems())
+            .filter(function (item) {
+                return item.cat() != 'payday';
+            })
+            .map(function (item) {
+                return parseFloat(item.amt());
+            })
+            .reduce(function (sum, val) {
+                return Math.round((sum + val) * 100) / 100;
+            })
+            .value();
+    });
+
+    /**
+     * paydayTotal
+     * @return {Number}   Total of all paydays
+     */
+    self.paydayTotal = ko.computed(function () {
+        return _.chain(self.filteredUserItems())
+            .filter(function (item) {
+                return item.cat() == 'payday';
+            })
+            .map(function (item) {
+                return parseFloat(item.amt());
+            })
+            .reduce(function (sum, val) {
+                return Math.round((sum + val) * 100) / 100;
+            })
+            .value();
+    });
+
+    /**
+     * userCategoriesTotals
+     * Array of categoryTotal objects
+     */
+    self.userCategoriesTotals = ko.computed(function () {
+        var categoryMap = _.chain(self.filteredUserItems())
+            .filter(function (item) {
+                return item.cat() != 'payday';
+            })
+            .groupBy(function (item) {
+                return item.cat();
+            })
+            .mapValues(function (cat) {
+                return _.chain(cat).map(function (item) {
+                    return parseFloat(item.amt());
+                })
+                .reduce(function (sum, val) {
+                    return Math.round((sum + val) * 100) / 100;
+                })
+                .value();
+            })
+            .value();
+
+        var totals = [];
+
+        for (var n in categoryMap) {
+            totals.push(new categoryTotal(n, categoryMap[n]))
+        }
+
+        return totals;
+    });
+
+    /**
+     * updatePieChart
+     * Creates the series data for the pie chart, based on category totals
+     * @param  {Array} value Array of categoryTotal objects
+     */
+    self.userCategoriesTotals.subscribe(function updatePieChart (categoryTotals) {
+        chart_objects.pie_chart.series[0].data = _.chain(categoryTotals)
+            .filter(function (item) {
+                return item.name != 'payday';
+            })
+            .map(function (item) {
+                item.y = item.amount;
+                item.id = item.name;
+                return item;
+            })
+            .value();
+
+        self.renderChart();
+    });
+
     if (window.File && window.FileReader && window.FileList && window.Blob) {
         self.canCSV(true);
     }
-    
-    self.loadedMonths.subscribe(function(array){
-        //console.log('added to loaded months '+array[array.length-1]);
-    });
     
     self.incrementMonth = function(){
         self.categoryHighlight(null);
@@ -5209,14 +5293,9 @@ function AppViewModel() {
         self.userItems.remove(item)
     };
     
-        // subscries to changes in userItems array. Uses a custom function to detect whether an item
-        // was added or removed from the array and then provices an add and remove callback
-    self.userItems.subscribeArrayChanged(
-        function(item){server.addItemToServer(item)
-        },
-        function(item){server.removeItemFromServer(item)
-        } 
-    );
+        // subscribes to changes in userItems array. Uses a custom function to detect whether an item
+        // was added or removed from the array and then provides an add and remove callback 
+    self.userItems.subscribeArrayChanged(server.addItemToServer, server.removeItemFromServer);
     
         // changes the table row CSS class based on a boolean value associated with the item
     self.flagItem = function(item){
@@ -5393,110 +5472,26 @@ function AppViewModel() {
         
     }
 
-    self.checkUnspent = function(next){
-        //console.log(self.difference())
-        if (self.showUnspent()===true){
-            if (self.difference() > 0){
-                var dif = parseFloat(self.difference());
-                chart_objects.pie_chart.series[0].data.push({name:'Unspent', y:dif,id:'unspentSlice'})
-                next(true);
-            } else {
-                next(false);
-            }
-        } else {
-            for (var i = 0; i < chart_objects.pie_chart.series[0].data.length; i++) {
-                if (chart_objects.pie_chart.series[0].data[i].name == 'Unspent'){
-                    chart_objects.pie_chart.series[0].data.splice(i,1);
-                    next(true);
-                    return
-                }
-            }
-            next(false);
-        }
-        
-    }
-
-    self.showUnspent.subscribe(function(){
-        self.checkUnspent(function(val){
-            if (val){
-                self.renderChart();
-            }
-        });
-    });
-
-        // setup an object to temporarily hold the values of each category total
-    var temp_totals = {};
-
-        // constructs the userCategoriesTotals based on what month is in view. Each time filteredUserItems
-        // changes, the totals associated with each catgory change as well
-    self.filteredUserItems.subscribe(function (array) {
-        
-            // total of all the categories combined. how much the user spent in the month they're viewing
-        var total = 0;
-        var paydayTotal = 0;
-        self.paydayTotal(0);
-        self.allCategoriesTotal(0);
-
-        temp_totals = {};
-        
-            // loop through the array. For each item...
-        for (i = 0; i < array.length; i++) {
-
-                // if payday item, add to paydayTotal else add the item to the category's total
-            if (array[i].cat().toLowerCase() == 'payday'){
-                paydayTotal += parseFloat(array[i].amt());
-            } else {
-            
-                // ...go through every item in userCategories
-                for (ii = 0; ii < self.userCategories().length; ii++) {
-               
-                        // if temp_totals doesn't have the category added yet, add it
-                    if (!temp_totals[self.userCategories()[ii]]) {
-                        temp_totals[self.userCategories()[ii]] = 0;
-                    }
-                    
-                        // if the category for this item match the category we're looking for, add the items
-                        // amount to temp_totals and the total
-                    if (array[i].cat() == self.userCategories()[ii]) {
-                        temp_totals[self.userCategories()[ii]] += parseFloat(array[i].amt());
-                        total += parseFloat(array[i].amt());
-                    }  
-                }
-            }
-        }
-        
-            // reset the array which holds the category totals
-        self.userCategoriesTotals.removeAll();
-        
-            // set up a highcharts object for making the pie chart
-        chart_objects.pie_chart.series[0].data = [];
-        
-            // for each category in temp_totals...
-        for (var l in temp_totals) {
-            var amt = Math.round(temp_totals[l] * 100) / 100;
-            
-                // ...add it to userCategoriesTotals
-            self.userCategoriesTotals.push(new categoryTotal(l, amt));
-            
-                // ...and to the high chart. keep the pie clean by excluding zero categories
-            if (amt !== 0 || name.toLowerCase() == 'payday'){
-                chart_objects.pie_chart.series[0].data.push({name:l, y:amt, id:l})
-            }
-        }
-        
-                
-            // apply the total value found above to our model
-        self.allCategoriesTotal(Math.round(total * 100) / 100);
-        self.paydayTotal(Math.round(paydayTotal * 100) / 100);
-
-        // display the new pie chart
-        if (self.sorting !== true && self.loadstatus() > 1) {
-            self.checkUnspent(function(val){
-                //console.log('rending chart')
-                self.renderChart();
+    /**
+     * showOrHideUnspent
+     * Updates the highcharts object, either adds or removes the 'unspent' 
+     * slice (the difference in paydays minus all items)
+     * @param  {Boolean} checked
+     */
+    self.showUnspent.subscribe(function showOrHideUnspent (checked) {
+        if (checked && self.difference() > 0) {
+            chart_objects.pie_chart.series[0].data.push({
+                name: 'Unspent', 
+                y: parseFloat(self.difference()),
+                id:'unspentSlice'
             })
+            return self.renderChart();
         }
-    })
+        _.remove(chart_objects.pie_chart.series[0].data, {
+            id: 'unspentSlice'
+        });
+        self.renderChart();
+    });
 
         // filter function to find unused categories    
     self.filteredUserItems.subscribe(function (array) {

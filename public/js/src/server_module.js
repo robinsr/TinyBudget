@@ -2,29 +2,32 @@ var server = (function(){
     return {
         fetchMonth: function(month,year,cb){
             tinybudget.viewmodel.loadstatus(1);
-            tinybudgetutils.issue('getMonth', [
-            ['name',tinybudget.viewmodel.user.name],
-            ['sess',tinybudget.viewmodel.user.sess],
-            ['year',year],
-            ['month',month]
-            ], null, function(err,stat,message){
-                
-            if (err || stat == 400) {
-                //console.log('error getMonth')
-            } else {
-                var datai = JSON.parse(message);            
-                var newItems = ko.mapping.fromJS([])
-                ko.mapping.fromJS(datai.items, mapping,newItems);
-                ko.utils.arrayPushAll(tinybudget.viewmodel.userItems, newItems());
-                tinybudget.viewmodel.userItems.valueHasMutated();
-                tinybudget.viewmodel.renderChart();
-                tinybudget.viewmodel.loadstatus(2);
-                tinybudget.viewmodel.loadedMonths.push(month+","+year);
-            }
-            });
+
+            $.ajax({
+                method: 'GET',
+                url: '/getMonth',
+                data: {
+                    name: tinybudget.viewmodel.user.name,
+                    sess: tinybudget.viewmodel.user.sess,
+                    year: year,
+                    month: month
+                },
+                success: function (data) {           
+                    var newItems = ko.mapping.fromJS([])
+                    ko.mapping.fromJS(data.items, mapping, newItems);
+                    ko.utils.arrayPushAll(tinybudget.viewmodel.userItems, newItems());
+                    tinybudget.viewmodel.userItems.valueHasMutated();
+                    tinybudget.viewmodel.renderChart();
+                    tinybudget.viewmodel.loadstatus(2);
+                    tinybudget.viewmodel.loadedMonths.push(month+","+year);
+
+                },
+                error: function (err) {
+                    tinybudget.viewmodel.serverError();
+                }
+            })
         },
         addItemToServer:function(item){
-            //console.log('server.addItemToServer; success is false, 2 or more, false', tinybudget.viewmodel.sorting, tinybudget.viewmodel.loadstatus(), item.loadedFromServer);
             if (tinybudget.viewmodel.sorting === false) {
                 if (tinybudget.viewmodel.loadstatus() > 1) {
                     if (item.loadedFromServer === false) {
