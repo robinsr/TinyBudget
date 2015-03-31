@@ -71,7 +71,7 @@ module.exports.getInit = function (req, res, next) {
   var options = {
     owner: req.user._id, 
     date: {
-      $gte : moment().subtract(2, 'month').toISOString(),
+      $gte: moment().subtract(2, 'month').toISOString(),
       $lte: moment().toISOString()
     }
   };
