@@ -1,8 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
 import ReactHighcharts from 'react-highcharts';
-import ItemStore from '../stores/ItemStore';
-import connectToStores from 'alt-utils/lib/connectToStores';
 
 const defaultConfig = {
   chart: {
@@ -40,28 +38,31 @@ const defaultConfig = {
   }]
 };
 
-class Chart extends React.Component {
-  static getStores() {
-    return [ItemStore];
-  }
-
-  static getPropsFromStores() {
-    return ItemStore.getState();
-  }
+export default class Chart extends React.Component {
 
   constructor(props) {
     super(props);
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    const chart = this.refs.chart.getChart();
+    const {showDetail} = this.props;
+    const sel = chart.series[0].data.filter(data => data.id === showDetail)[0];
+
+    if (sel) {
+      sel.select();
+    }
+  }
+
   render() {
-    const { items } = this.props;
+    const { items, onClick } = this.props;
 
     const config = Object.assign({}, defaultConfig);
 
-    config.series[0].data = _.chain(items).groupBy('category').map(items => {
+    const data = _.chain(items).groupBy('category').map(items => {
       const y = _.reduce(items, (sum, item) => {
-        return sum + item.amount;
-      },0);
+        return Math.round((sum + item.amount) * 100) / 100;
+      }, 0);
 
       return {
         name: items[0].category,
@@ -70,10 +71,17 @@ class Chart extends React.Component {
       }
     }).value();
 
+    const handleClick = function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      onClick(this.id);
+    };
+
+    _.set(config, 'series[0].point.events.click', handleClick);
+    _.set(config, 'series[0].data', data);
+
     return (
-      <ReactHighcharts config={config}></ReactHighcharts>
+      <ReactHighcharts config={config} ref="chart"></ReactHighcharts>
     );
   }
 }
-
-export default connectToStores(Chart)

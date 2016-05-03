@@ -10,11 +10,23 @@ import CategorySummary from './CategorySummary.jsx';
 import Chart from './Chart.jsx';
 import AllItems from './AllItems.jsx';
 
-export default class App extends React.Component {
+import ItemStore from '../stores/ItemStore';
+import connectToStores from 'alt-utils/lib/connectToStores';
+
+class App extends React.Component {
+  static getStores() {
+    return [ItemStore];
+  }
+
+  static getPropsFromStores() {
+    return ItemStore.getState();
+  }
+
   constructor() {
     super();
     this.state = {
-      now: moment()
+      now: moment(),
+      showDetail: false
     }
   }
 
@@ -30,8 +42,19 @@ export default class App extends React.Component {
     });
   }
 
+  handleClick = (catName) => {
+    this.setState({
+      showDetail: catName === this.state.showDetail ? false : catName
+    });
+  }
+
   render() {
-    const {now} = this.state;
+    const {now, showDetail} = this.state;
+
+    const items = this.props.items.filter(item => {
+      const m = moment(item.date);
+      return m.isSame(now, 'year') && m.isSame(now, 'month');
+    });
 
     return(<div>
       <MenuBar />
@@ -41,23 +64,25 @@ export default class App extends React.Component {
             <InputForm />
           </div>
           <div className="span4">
-            <MonthSelctor onInc={this.incMonth} onDec={this.decMonth} now={now}/>
+            <MonthSelctor onInc={this.incMonth} onDec={this.decMonth} now={now} />
           </div>
         </div>
         <div className="row">
           <div className="span5">
-            <CategorySummary />
+            <CategorySummary items={items} showDetail={showDetail} />
           </div>
           <div className="span7">
-            <Chart />
+            <Chart items={items} onClick={this.handleClick} showDetail={showDetail} />
           </div>          
         </div>
         <div className="row">
           <div className="span12">
-            <AllItems />
+            <AllItems items={items} />
           </div>
         </div>
       </div>
     </div>);
   }
 }
+
+export default connectToStores(App);

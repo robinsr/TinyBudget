@@ -1,36 +1,17 @@
 import React from 'react';
 import uuid from 'uuid-v4';
-
-import ItemStore from '../stores/ItemStore';
+import moment from 'moment';
 
 import TableRow from './TableRow.jsx'
 
 export default class AllItems extends React.Component {
-  static propTypes = {
-    name: React.PropTypes.string,
-  };
 
   constructor(props) {
     super(props);
-
-    this.state = ItemStore.getState();
-  }
-
-  storeChanged = (state) => {
-    this.setState(state);
-  }
-
-  componentDidMount() {
-    ItemStore.listen(this.storeChanged);
-  }
-
-  componentWillUnmount() {
-    ItemStore.unlisten(this.storeChanged);
   }
 
   render() {
-    const {items} = this.state;
-
+    const {now, items} = this.props;
     const headers = ['Date','Description','Category','Amount','','','',''];
 
     return (
