@@ -25,6 +25,14 @@ module.exports = function (app) {
   app.get('/deleteCategory', validateSession, categories.remove);
   app.get('/getCategoryTotal', validateSession, categories.getTotals);
 
+  //rest 
+  // app.get('/item/:year/:month')
+  // app.post('/item')
+  // app.del('/item/:id')
+  // app.get('/category')
+  // app.post('/category')
+  // app.del('./category/:id')
+
   app.use(function (err, req, res, next) {
     console.error(err.stack);
     res.status(500).send(err.toString());
