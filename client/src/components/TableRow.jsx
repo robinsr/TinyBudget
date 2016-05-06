@@ -3,7 +3,7 @@ import moment from 'moment';
 
 export default class TableRow extends React.Component {
   static propTypes = {
-    name: React.PropTypes.string,
+    hideCategory: React.PropTypes.boolean,
   };
 
   constructor(props) {
@@ -11,14 +11,15 @@ export default class TableRow extends React.Component {
   }
 
   render() {
-    const {date, description, amount, category} = this.props.data;
+    const { hideCategory, data: { date, description, amount, category } } = this.props;
+    const categoryCell = hideCategory ? undefined : <td>{category}</td>
 
     return (
       <tr>
-        <td>{moment(date).format('MM/DD/YYYY')}</td>
+        <td>{moment(date).format('MMM Do, YYYY')}</td>
         <td>{description}</td>
-        <td>{category}</td>
-        <td>{amount}</td>
+        {categoryCell}
+        <td>${amount}</td>
         <td><i className="icon-remove"></i></td>
         <td><i className="icon-flag"></i></td>
         <td><i className="icon-comment"></i></td>

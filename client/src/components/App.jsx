@@ -26,7 +26,8 @@ class App extends React.Component {
     super();
     this.state = {
       now: moment(),
-      showDetail: false
+      showDetail: null,
+      modal: null
     }
   }
 
@@ -56,32 +57,46 @@ class App extends React.Component {
       return m.isSame(now, 'year') && m.isSame(now, 'month');
     });
 
-    return(<div>
-      <MenuBar />
-      <div className="container">
-        <div className="row">
-          <div className="span8">
-            <InputForm />
+    const categories = _.chain(items).groupBy('category').map(items => {
+      const y = _.reduce(items, (sum, item) => {
+        return Math.round((sum + item.amount) * 100) / 100;
+      }, 0);
+
+      return {
+        name: items[0].category,
+        id: items[0].category,
+        y
+      }
+    }).value();
+
+    return (
+      <div>
+        <MenuBar />
+        <div className="container">
+          <div className="row">
+            <div className="span9">
+              <InputForm />
+            </div>
+            <div className="span3">
+              <MonthSelctor onInc={this.incMonth} onDec={this.decMonth} now={now} />
+            </div>
           </div>
-          <div className="span4">
-            <MonthSelctor onInc={this.incMonth} onDec={this.decMonth} now={now} />
+          <div className="row">
+            <div className="span5">
+              <CategorySummary categories={categories} items={items} showDetail={showDetail} />
+            </div>
+            <div className="span7">
+              <Chart items={items} categories={categories} onClick={this.handleClick} showDetail={showDetail} />
+            </div>          
           </div>
-        </div>
-        <div className="row">
-          <div className="span5">
-            <CategorySummary items={items} showDetail={showDetail} />
-          </div>
-          <div className="span7">
-            <Chart items={items} onClick={this.handleClick} showDetail={showDetail} />
-          </div>          
-        </div>
-        <div className="row">
-          <div className="span12">
-            <AllItems items={items} />
+          <div className="row">
+            <div className="span12">
+              <AllItems items={items} />
+            </div>
           </div>
         </div>
       </div>
-    </div>);
+    );
   }
 }
 

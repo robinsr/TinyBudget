@@ -55,21 +55,9 @@ export default class Chart extends React.Component {
   }
 
   render() {
-    const { items, onClick } = this.props;
+    const { categories, onClick } = this.props;
 
     const config = Object.assign({}, defaultConfig);
-
-    const data = _.chain(items).groupBy('category').map(items => {
-      const y = _.reduce(items, (sum, item) => {
-        return Math.round((sum + item.amount) * 100) / 100;
-      }, 0);
-
-      return {
-        name: items[0].category,
-        id: items[0].category,
-        y
-      }
-    }).value();
 
     const handleClick = function (e) {
       e.preventDefault();
@@ -78,7 +66,7 @@ export default class Chart extends React.Component {
     };
 
     _.set(config, 'series[0].point.events.click', handleClick);
-    _.set(config, 'series[0].data', data);
+    _.set(config, 'series[0].data', categories);
 
     return (
       <ReactHighcharts config={config} ref="chart"></ReactHighcharts>
